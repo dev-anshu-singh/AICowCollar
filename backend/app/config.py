@@ -17,4 +17,8 @@ class Settings:
     MODEL_FILE_PATH: Path = ML_MODELS_DIR / "champion_cow_behavior_model.joblib"
     METADATA_FILE_PATH: Path = ML_MODELS_DIR / "feature_metadata.json"
 
+    # LLM Vet Settings
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
+
 settings = Settings()

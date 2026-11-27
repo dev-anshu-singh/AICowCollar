@@ -3,5 +3,6 @@ from .activity import router as activity_router
 from .temperature import router as temperature_router
 from .heart_rate import router as heart_rate_router
 from .gps import router as gps_router
+from .vet import vet_router
 
-__all__ = ["cows_router", "activity_router", "temperature_router", "heart_rate_router", "gps_router"]
+__all__ = ["cows_router", "activity_router", "temperature_router", "heart_rate_router", "gps_router", "vet_router"]

@@ -24,6 +24,7 @@ from .gps import (
     GPSAlertResponse,
     FarmPolygonResponse,
 )
+from .vet import CowTelemetrySnapshot, SimpleDiagnosticCard
 
 __all__ = [
     "CowBase",
@@ -51,4 +52,6 @@ __all__ = [
     "GPSRecordResponse",
     "GPSAlertResponse",
     "FarmPolygonResponse",
+    "CowTelemetrySnapshot",
+    "SimpleDiagnosticCard",
 ]

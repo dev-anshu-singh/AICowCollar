@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
 from .database import engine, Base
-from .routers import cows_router, activity_router, temperature_router, heart_rate_router, gps_router
+from .routers import cows_router, activity_router, temperature_router, heart_rate_router, gps_router, vet_router
 from . import models  # Ensures all ORM models are registered with Base.metadata
 
 # Auto-create SQLite database tables on startup
@@ -13,7 +13,7 @@ app = FastAPI(
     version=settings.VERSION,
     description="Central cloud telemetry backend for AI-powered cow collar: "
                 "12-feature activity classification, CUSUM temperature anomaly detection, "
-                "heart rate monitoring, and GPS polygon geofencing."
+                "heart rate monitoring, GPS polygon geofencing, and Gemini LLM Vet synthesizer."
 )
 
 # CORS Middleware (allows web dashboard / mobile app integration)
@@ -31,6 +31,7 @@ app.include_router(activity_router, prefix=settings.API_V1_STR)
 app.include_router(temperature_router, prefix=settings.API_V1_STR)
 app.include_router(heart_rate_router, prefix=settings.API_V1_STR)
 app.include_router(gps_router, prefix=settings.API_V1_STR)
+app.include_router(vet_router, prefix=settings.API_V1_STR)
 
 @app.get("/", tags=["System Health"])
 def root():
