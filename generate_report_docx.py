@@ -185,36 +185,15 @@ def create_report():
 
     add_p("", space_before=8, space_after=4)
 
-    # Institutional Logos
-    logo_table = doc.add_table(rows=1, cols=2)
-    logo_table.alignment = WD_TABLE_ALIGNMENT.CENTER
-    logo_table.autofit = False
-    logo_table.rows[0].cells[0].width = Inches(3.2)
-    logo_table.rows[0].cells[1].width = Inches(3.2)
-
-    cell_logo1 = logo_table.cell(0, 0)
-    p_l1 = cell_logo1.paragraphs[0]
-    p_l1.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    if os.path.exists("extracted_report_media/word/media/image1.jpeg"):
-        p_l1.add_run().add_picture("extracted_report_media/word/media/image1.jpeg", width=Inches(1.0))
-
-    cell_logo2 = logo_table.cell(0, 1)
-    p_l2 = cell_logo2.paragraphs[0]
-    p_l2.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    if os.path.exists("extracted_report_media/word/media/image2.png"):
-        p_l2.add_run().add_picture("extracted_report_media/word/media/image2.png", width=Inches(0.95))
-
-    add_p("", space_before=4, space_after=2)
-
-    # Institutional Names (Strictly Black)
-    p_hi = add_p("भारतीय सूचना प्रौद्योगिकी संस्थान, भागलपुर", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=12.5, space_before=2, space_after=1, font_name="Nirmala UI")
-    p_hi.runs[0].font.color.rgb = RGBColor(0, 0, 0)
-
-    p_en = add_p("Indian Institute of Information Technology, Bhagalpur", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=13, space_before=1, space_after=1)
-    p_en.runs[0].font.color.rgb = RGBColor(0, 0, 0)
-
-    p_sub = add_p("(An Institute of National Importance Under Act of Parliament)", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10.5, space_before=1, space_after=4)
-    p_sub.runs[0].font.color.rgb = RGBColor(0, 0, 0)
+    # Official IIIT Bhagalpur Header Banner
+    if os.path.exists("IIITBH-WEBPAGE-HEADER.png"):
+        p_hdr = doc.add_paragraph()
+        p_hdr.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_hdr.paragraph_format.space_before = Pt(6)
+        p_hdr.paragraph_format.space_after = Pt(6)
+        p_hdr.add_run().add_picture("IIITBH-WEBPAGE-HEADER.png", width=Inches(5.8))
+    else:
+        add_p("Indian Institute of Information Technology, Bhagalpur", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=13)
 
     p_dt = add_p("November 2026", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=11.5, space_before=4, space_after=2)
     p_dt.runs[0].font.color.rgb = RGBColor(0, 0, 0)
@@ -224,26 +203,12 @@ def create_report():
     # =========================================================================
     # 2. DECLARATION
     # =========================================================================
-    header_table = doc.add_table(rows=1, cols=2)
-    header_table.alignment = WD_TABLE_ALIGNMENT.CENTER
-    header_table.autofit = False
-    header_table.rows[0].cells[0].width = Inches(3.2)
-    header_table.rows[0].cells[1].width = Inches(3.2)
-    if os.path.exists("extracted_report_media/word/media/image1.jpeg"):
-        p = header_table.cell(0, 0).paragraphs[0]
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p.add_run().add_picture("extracted_report_media/word/media/image1.jpeg", width=Inches(0.85))
-    if os.path.exists("extracted_report_media/word/media/image2.png"):
-        p = header_table.cell(0, 1).paragraphs[0]
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p.add_run().add_picture("extracted_report_media/word/media/image2.png", width=Inches(0.80))
-
-    p1 = add_p("भारतीय सूचना प्रौद्योगिकी संस्थान, भागलपुर", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=11.5, space_before=3, space_after=1, font_name="Nirmala UI")
-    p1.runs[0].font.color.rgb = RGBColor(0, 0, 0)
-    p2 = add_p("Indian Institute of Information Technology, Bhagalpur", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=12, space_before=1, space_after=1)
-    p2.runs[0].font.color.rgb = RGBColor(0, 0, 0)
-    p3 = add_p("(An Institute of National Importance Under Act of Parliament)", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10, space_before=1, space_after=12)
-    p3.runs[0].font.color.rgb = RGBColor(0, 0, 0)
+    if os.path.exists("IIITBH-WEBPAGE-HEADER.png"):
+        p_hdr = doc.add_paragraph()
+        p_hdr.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_hdr.paragraph_format.space_before = Pt(0)
+        p_hdr.paragraph_format.space_after = Pt(12)
+        p_hdr.add_run().add_picture("IIITBH-WEBPAGE-HEADER.png", width=Inches(5.6))
 
     p_dec = add_p("DECLARATION", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=14, space_before=8, space_after=10)
     p_dec.runs[0].underline = True
@@ -287,26 +252,12 @@ def create_report():
     # =========================================================================
     # 3. CERTIFICATE
     # =========================================================================
-    header_table2 = doc.add_table(rows=1, cols=2)
-    header_table2.alignment = WD_TABLE_ALIGNMENT.CENTER
-    header_table2.autofit = False
-    header_table2.rows[0].cells[0].width = Inches(3.2)
-    header_table2.rows[0].cells[1].width = Inches(3.2)
-    if os.path.exists("extracted_report_media/word/media/image1.jpeg"):
-        p = header_table2.cell(0, 0).paragraphs[0]
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p.add_run().add_picture("extracted_report_media/word/media/image1.jpeg", width=Inches(0.85))
-    if os.path.exists("extracted_report_media/word/media/image2.png"):
-        p = header_table2.cell(0, 1).paragraphs[0]
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p.add_run().add_picture("extracted_report_media/word/media/image2.png", width=Inches(0.80))
-
-    p1 = add_p("भारतीय सूचना प्रौद्योगिकी संस्थान, भागलपुर", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=11.5, space_before=3, space_after=1, font_name="Nirmala UI")
-    p1.runs[0].font.color.rgb = RGBColor(0, 0, 0)
-    p2 = add_p("Indian Institute of Information Technology, Bhagalpur", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=12, space_before=1, space_after=1)
-    p2.runs[0].font.color.rgb = RGBColor(0, 0, 0)
-    p3 = add_p("(An Institute of National Importance Under Act of Parliament)", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10, space_before=1, space_after=12)
-    p3.runs[0].font.color.rgb = RGBColor(0, 0, 0)
+    if os.path.exists("IIITBH-WEBPAGE-HEADER.png"):
+        p_hdr = doc.add_paragraph()
+        p_hdr.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_hdr.paragraph_format.space_before = Pt(0)
+        p_hdr.paragraph_format.space_after = Pt(12)
+        p_hdr.add_run().add_picture("IIITBH-WEBPAGE-HEADER.png", width=Inches(5.6))
 
     p_cert = add_p("CERTIFICATE", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=14, space_before=8, space_after=10)
     p_cert.runs[0].underline = True

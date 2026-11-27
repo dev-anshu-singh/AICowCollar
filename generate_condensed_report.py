@@ -166,50 +166,29 @@ def create_condensed_report():
 
     add_p("", space_before=6, space_after=2)
 
-    # Institutional Logos
-    logo_table = doc.add_table(rows=1, cols=2)
-    logo_table.alignment = WD_TABLE_ALIGNMENT.CENTER
-    logo_table.autofit = False
-    logo_table.rows[0].cells[0].width = Inches(3.1)
-    logo_table.rows[0].cells[1].width = Inches(3.1)
+    # Official IIIT Bhagalpur Header Banner
+    if os.path.exists("IIITBH-WEBPAGE-HEADER.png"):
+        p_hdr = doc.add_paragraph()
+        p_hdr.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_hdr.paragraph_format.space_before = Pt(6)
+        p_hdr.paragraph_format.space_after = Pt(6)
+        p_hdr.add_run().add_picture("IIITBH-WEBPAGE-HEADER.png", width=Inches(5.8))
+    else:
+        add_p("Indian Institute of Information Technology, Bhagalpur", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=12.5)
 
-    p_l1 = logo_table.cell(0, 0).paragraphs[0]
-    p_l1.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    if os.path.exists("extracted_report_media/word/media/image1.jpeg"):
-        p_l1.add_run().add_picture("extracted_report_media/word/media/image1.jpeg", width=Inches(0.95))
-
-    p_l2 = logo_table.cell(0, 1).paragraphs[0]
-    p_l2.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    if os.path.exists("extracted_report_media/word/media/image2.png"):
-        p_l2.add_run().add_picture("extracted_report_media/word/media/image2.png", width=Inches(0.90))
-
-    add_p("", space_before=2, space_after=1)
-
-    add_p("भारतीय सूचना प्रौद्योगिकी संस्थान, भागलपुर", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=12, space_before=2, space_after=1, font_name="Nirmala UI")
-    add_p("Indian Institute of Information Technology, Bhagalpur", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=12.5, space_before=1, space_after=1)
-    add_p("(An Institute of National Importance Under Act of Parliament)", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10, space_before=1, space_after=3)
-    add_p("November 2026", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=11, space_before=2, space_after=2)
+    add_p("November 2026", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=11, space_before=4, space_after=2)
 
     doc.add_page_break()
 
     # =========================================================================
     # 2. DECLARATION
     # =========================================================================
-    header_table = doc.add_table(rows=1, cols=2)
-    header_table.alignment = WD_TABLE_ALIGNMENT.CENTER
-    header_table.autofit = False
-    header_table.rows[0].cells[0].width = Inches(3.1)
-    header_table.rows[0].cells[1].width = Inches(3.1)
-    if os.path.exists("extracted_report_media/word/media/image1.jpeg"):
-        header_table.cell(0, 0).paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-        header_table.cell(0, 0).paragraphs[0].add_run().add_picture("extracted_report_media/word/media/image1.jpeg", width=Inches(0.80))
-    if os.path.exists("extracted_report_media/word/media/image2.png"):
-        header_table.cell(0, 1).paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-        header_table.cell(0, 1).paragraphs[0].add_run().add_picture("extracted_report_media/word/media/image2.png", width=Inches(0.75))
-
-    add_p("भारतीय सूचना प्रौद्योगिकी संस्थान, भागलपुर", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=11, space_before=2, space_after=1, font_name="Nirmala UI")
-    add_p("Indian Institute of Information Technology, Bhagalpur", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=11.5, space_before=1, space_after=1)
-    add_p("(An Institute of National Importance Under Act of Parliament)", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=9.5, space_before=1, space_after=10)
+    if os.path.exists("IIITBH-WEBPAGE-HEADER.png"):
+        p_hdr = doc.add_paragraph()
+        p_hdr.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_hdr.paragraph_format.space_before = Pt(0)
+        p_hdr.paragraph_format.space_after = Pt(12)
+        p_hdr.add_run().add_picture("IIITBH-WEBPAGE-HEADER.png", width=Inches(5.6))
 
     p_dec = add_p("DECLARATION", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=13, space_before=4, space_after=8)
     p_dec.runs[0].underline = True
@@ -248,21 +227,12 @@ def create_condensed_report():
     # =========================================================================
     # 3. CERTIFICATE
     # =========================================================================
-    header_table2 = doc.add_table(rows=1, cols=2)
-    header_table2.alignment = WD_TABLE_ALIGNMENT.CENTER
-    header_table2.autofit = False
-    header_table2.rows[0].cells[0].width = Inches(3.1)
-    header_table2.rows[0].cells[1].width = Inches(3.1)
-    if os.path.exists("extracted_report_media/word/media/image1.jpeg"):
-        header_table2.cell(0, 0).paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-        header_table2.cell(0, 0).paragraphs[0].add_run().add_picture("extracted_report_media/word/media/image1.jpeg", width=Inches(0.80))
-    if os.path.exists("extracted_report_media/word/media/image2.png"):
-        header_table2.cell(0, 1).paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-        header_table2.cell(0, 1).paragraphs[0].add_run().add_picture("extracted_report_media/word/media/image2.png", width=Inches(0.75))
-
-    add_p("भारतीय सूचना प्रौद्योगिकी संस्थान, भागलपुर", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=11, space_before=2, space_after=1, font_name="Nirmala UI")
-    add_p("Indian Institute of Information Technology, Bhagalpur", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=11.5, space_before=1, space_after=1)
-    add_p("(An Institute of National Importance Under Act of Parliament)", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=9.5, space_before=1, space_after=10)
+    if os.path.exists("IIITBH-WEBPAGE-HEADER.png"):
+        p_hdr = doc.add_paragraph()
+        p_hdr.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_hdr.paragraph_format.space_before = Pt(0)
+        p_hdr.paragraph_format.space_after = Pt(12)
+        p_hdr.add_run().add_picture("IIITBH-WEBPAGE-HEADER.png", width=Inches(5.6))
 
     p_cert = add_p("CERTIFICATE", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=13, space_before=4, space_after=8)
     p_cert.runs[0].underline = True
