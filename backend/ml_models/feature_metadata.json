@@ -1,0 +1,43 @@
+{
+    "model_name": "4. Streamlined Extra Trees (12 Feat)",
+    "algorithm": "ExtraTreesClassifier",
+    "n_features": 12,
+    "feature_names": [
+        "Mean_accX",
+        "Min_accX",
+        "Mean_accY",
+        "RMS_accY",
+        "Mean_accZ",
+        "Mean_SVM_gyro",
+        "Min_SVM_gyro",
+        "Max_SVM_gyro",
+        "IQR_gyroY",
+        "IQR_gyroZ",
+        "Mean_SVM_acc",
+        "Sd_SVM_acc"
+    ],
+    "target_classes": [
+        "lying",
+        "standing",
+        "eating",
+        "walking"
+    ],
+    "class_to_idx": {
+        "lying": 0,
+        "standing": 1,
+        "eating": 2,
+        "walking": 3
+    },
+    "idx_to_class": {
+        "0": "lying",
+        "1": "standing",
+        "2": "eating",
+        "3": "walking"
+    },
+    "metrics": {
+        "test_accuracy": 0.9554489376285127,
+        "test_macro_f1": 0.9100679589435486,
+        "test_weighted_f1": 0.9561368674203663,
+        "test_mcc": 0.9157125541436859
+    }
+}
