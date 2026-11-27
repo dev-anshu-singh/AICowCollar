@@ -1,0 +1,71 @@
+\documentclass[conference]{IEEEtran}
+
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{microtype}
+
+\begin{document}
+
+\title{Smart Cow Collar Telemetry System for Health Monitoring and Behavior Classification}
+
+\maketitle
+
+\begin{abstract}
+Monitoring the health and daily behavior of dairy cows is important for early disease detection and overall farm management. Doing this manually by visual inspection takes a lot of time and can easily miss early symptoms of illness. In this paper, we propose a smart cow collar system to monitor cattle health and activity automatically. The collar is fitted with an accelerometer, gyroscope, temperature sensor, pulse sensor, and GPS module. To keep the collar lightweight and preserve battery life, it does not perform any on-board machine learning; instead, it simply collects the sensor readings and transmits them to a central computer. On the central system, the motion data is used to classify daily cow behaviors such as lying, standing, eating, and walking. In addition, unsupervised machine learning is used to learn each cow's normal daily routine and vitals, allowing the system to automatically flag health anomalies---such as fevers, lameness, or heat cycles---without needing pre-labeled disease datasets.
+\end{abstract}
+
+\section{Introduction}
+
+In dairy farming, keeping track of cow health and daily behavior is essential for good farm management. A cow's daily routine usually follows a steady pattern: it spends most of its day resting and chewing cud while lying down, along with regular periods of standing, feeding, and walking around the pen or pasture. When a cow starts deviating from this usual routine, it is often an early sign that something is wrong. For example, if a cow abruptly stops eating, it could be facing a digestive problem. If it spends much more time lying down and avoids moving, it might be developing lameness or an infection. Similarly, when a cow is in heat (estrus), its restlessness and walking activity typically spike.
+
+Traditionally, farmers and caretakers monitor their cattle through direct visual observation. While an experienced farmer can spot obvious signs of illness, watching animals continuously across a herd takes a lot of time and effort. As a result, early symptoms such as mild fevers or subtle behavioral changes often go unnoticed until the cow becomes visibly sick. When treatment is delayed, milk production drops and veterinary costs increase. 
+
+Automating this process using wearable devices offers a practical alternative. Among different wearable options, a neck collar is one of the most reliable and convenient form factors. It stays clean, does not get kicked or damaged easily like leg bands, and remains comfortably positioned on the animal. In our system, the collar is equipped with a combination of four main sensors to gather a complete picture of the cow's physical activity and physical state:
+\begin{itemize}
+    \item \textbf{Motion Sensor (Accelerometer and Gyroscope):} Measures neck movements and body tilt. The accelerometer helps tell whether the animal is upright or lying down, while the gyroscope picks up head rotations during chewing, feeding, and walking.
+    \item \textbf{Temperature Sensor:} Measures body temperature to catch fevers early and track heat stress during hot weather.
+    \item \textbf{Pulse Sensor:} Monitors heart rate to detect physical pain, acute stress, or illness.
+    \item \textbf{GPS Module:} Tracks the cow's location to ensure it stays within pasture boundaries and calculates how much distance it covers each day.
+\end{itemize}
+
+A major practical hurdle with smart collars is battery life. Running feature calculations and machine learning algorithms directly on the collar's microcontroller requires constant processing, which drains the battery fast. To avoid this problem, our design keeps the collar purely as a data collection and transmission unit. The collar simply reads the sensors, packages the readings, and sends them wirelessly to a central computer or base station. This keeps the collar hardware simple, lightweight, and energy-efficient.
+
+All the data processing and analysis take place on the central system. First, the inertial motion data are run through a simplified classification pipeline to identify basic daily behaviors, namely lying, standing, eating, and walking. Second, because collecting labeled training data for every specific cow disease is difficult, we rely on unsupervised machine learning. The system tracks each cow's individual daily baseline—including its normal resting hours, eating duration, body temperature, and pulse rate. When an unexpected deviation occurs, such as a sudden fever, an unusual drop in feeding, or abnormal restlessness, the system flags it as an anomaly. This gives the farmer an early, automated warning so that issues can be addressed before they turn into serious health problems.
+
+\section{Results}
+
+This section presents the performance of the machine learning model used to classify the four primary cow behaviors: lying, standing, eating, and walking. A Random Forest classifier was evaluated across three different sensor setups: accelerometer-only, gyroscope-only, and a combined sensor model. Table~\ref{tab:ml_results} lists the precision, recall (sensitivity), F1-score, and overall accuracy for each setup.
+
+\begin{table}[htbp]
+\caption{Classification Performance of the Machine Learning Model Across Sensor Setups}
+\label{tab:ml_results}
+\centering
+\begin{tabular}{llcccc}
+\hline
+\textbf{Behavior} & \textbf{Sensor Setup} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-Score} & \textbf{Accuracy} \\
+\hline
+Lying    & Accelerometer     & 92.0\% & 93.8\% & 92.9\% & 88.7\% \\
+         & Gyroscope         & 92.1\% & 93.7\% & 92.9\% & 85.9\% \\
+         & \textbf{Combined} & \textbf{93.5\%} & \textbf{95.3\%} & \textbf{94.4\%} & \textbf{88.9\%} \\
+\hline
+Standing & Accelerometer     & 84.9\% & 89.5\% & 87.1\% & 88.7\% \\
+         & Gyroscope         & 79.6\% & 90.2\% & 84.6\% & 85.9\% \\
+         & \textbf{Combined} & \textbf{84.5\%} & \textbf{90.7\%} & \textbf{87.5\%} & \textbf{88.9\%} \\
+\hline
+Eating   & Accelerometer     & 88.4\% & 74.6\% & 80.9\% & 88.7\% \\
+         & Gyroscope         & 85.5\% & 35.4\% & 50.0\% & 85.9\% \\
+         & \textbf{Combined} & \textbf{83.6\%} & \textbf{64.5\%} & \textbf{72.8\%} & \textbf{88.9\%} \\
+\hline
+Walking  & Accelerometer     & 96.7\% & 29.9\% & 45.7\% & 88.7\% \\
+         & Gyroscope         & 89.9\% & 18.3\% & 30.4\% & 85.9\% \\
+         & \textbf{Combined} & \textbf{90.3\%} & \textbf{19.7\%} & \textbf{32.4\%} & \textbf{88.9\%} \\
+\hline
+\end{tabular}
+\end{table}
+
+The combined accelerometer and gyroscope model achieved the highest overall accuracy at 88.9\%. Lying and standing were recognized with the highest accuracy, reaching F1-scores of 94.4\% and 87.5\%, respectively. Because these two behaviors depend largely on body tilt relative to gravity, the accelerometer provides strong, clear signals to separate them.
+
+Eating and walking were more dynamic and harder to classify. For eating, the combined setup achieved an F1-score of 72.8\%, where the gyroscope helped by picking up head turns and chewing rotations that the accelerometer alone missed. Walking showed high precision (90.3\%), but lower recall (19.7\%). This is mainly because cows spend very little time walking during the day (usually under 2\% of total time), creating an imbalanced dataset where the model only predicts walking when it is very confident. Overall, fusing accelerometer and gyroscope data gave more reliable and consistent classification than relying on either sensor alone.
+
+\end{document}

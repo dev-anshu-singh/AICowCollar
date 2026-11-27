@@ -1,0 +1,1485 @@
+
+--- PAGE 1 ---
+RESEARCH Open Access
+© The Author(s) 2025. Open Access  This article is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 
+International License, which permits any non-commercial use, sharing, distribution and reproduction in any medium or format, as long as you 
+give appropriate credit to the original author(s) and the source, provide a link to the Creative Commons licence, and indicate if you modified the 
+licensed material. You do not have permission under this licence to share adapted material derived from this article or parts of it. The images or 
+other third party material in this article are included in the article’s Creative Commons licence, unless indicated otherwise in a credit line to the 
+material. If material is not included in the article’s Creative Commons licence and your intended use is not permitted by statutory regulation or 
+exceeds the permitted use, you will need to obtain permission directly from the copyright holder. To view a copy of this licence, visit  h t t p  : / /  c r e a  t i  
+v e c  o m m  o n s .  o r  g / l  i c e  n s e s  / b  y - n c - n d / 4 . 0 /.
+Pongsanun et al. BMC Veterinary Research          (2025) 21:677 
+https://doi.org/10.1186/s12917-025-05092-1
+BMC Veterinary Research
+*Correspondence:
+Inchaisri Chaidate
+chaidate.i@chula.ac.th
+1Center of Excellence in Data Innovation for Sustainable Livestock 
+Production, Department of Veterinary Medicine, Faculty of Veterinary 
+Science, Chulalongkorn University, Bangkok, Thailand
+2Department of Survey Engineering, Faculty of Engineering, 
+Chulalongkorn University, Bangkok, Thailand
+Abstract
+Background Automated behavior monitoring is increasingly important in precision dairy farming, supporting 
+early disease detection, welfare assessment, and productivity optimization. Although accelerometers effectively 
+detect postural changes, they have limited capacity to capture rotational or transitional movements. Gyroscopes 
+provide complementary angular velocity data that may enhance classification of complex behaviors. However, 
+their combined use remains underexplored, particularly at the individual cow level. This study aims to evaluate the 
+performance of accelerometer, gyroscope, and combined sensors models for classifying four key cow behaviors: lying, 
+standing, eating, and walking at the individual animal level.
+Results Over 780,000 labeled observations were obtained from seven dairy cows monitored over 90 days. Lying 
+behavior consistently produced low, stable signals across all axes of accelerometer and gyroscope, while eating 
+showed the greatest variability, particularly along the X and Y axes. Significant axis-specific and behavior-specific 
+differences were observed (p < 0.05), with GyroY and GyroZ capturing the highest rotational activity during eating 
+and walking. Signal vector magnitudes effectively distinguished behaviors, with lying showing the lowest values and 
+eating the highest. Random Forest models combining accelerometer and gyroscope data consistently outperformed 
+single-sensor approaches, particularly for classifying lying and standing behaviors. Although eating and walking 
+exhibited lower sensitivity, sensor fusion improved classification robustness across individuals.
+Conclusion The integration of accelerometer and gyroscope data enhanced classification accuracy, particularly 
+for static behaviors. Axis-specific signal patterns and individualized modeling revealed critical insights into behavior 
+differentiation and cow-specific variability. These findings support the development of scalable, sensor-based 
+monitoring systems tailored to precision livestock management.
+Keywords Dairy cow behavior, Behavior classification, Precision livestock farming, Random forest machine learning, 
+Sensor fusion, Tri-axial accelerometer and gyroscope
+Classification of individual dairy cow 
+behaviors using accelerometer, gyroscope, 
+and integrated sensor models
+Khamta Pongsanun1, Tadsorn Apirak1, Leklerdsiriwong Aekaluck1, Chunithipaisan Sanphet2 and Inchaisri Chaidate1*
+--- PAGE 2 ---
+Page 2 of 19
+Pongsanun et al. BMC Veterinary Research          (2025) 21:677 
+Background
+Monitoring livestock behavior is a fundamental aspect of 
+precision dairy farming, supporting animal welfare, early 
+disease detection, and productivity improvements [ 1–3]. 
+Accurate behavior monitoring facilitates the early detec -
+tion of health and reproductive conditions, such as lame -
+ness, metabolic disorders, and estrus, thereby enhancing 
+herd management outcomes [ 2, 4, 5]. Traditional obser -
+vation methods, such as visual scoring, are labor-inten -
+sive, subjective, and limited in both temporal resolution 
+and scalability, which restricts their utility in modern 
+herd management systems [ 6]. As an alternative, wear -
+able sensor technologies, particularly accelerometers, 
+have emerged as reliable tools for continuous and auto -
+mated behavior monitoring in cattle [ 7–9]. Recognizing 
+fundamental behaviors such as lying, standing, eating, 
+and walking has direct implications for dairy herd health 
+and productivity. Alterations in lying and standing pat -
+terns are linked to lameness and metabolic disorders [ 4, 
+5], while eating behavior reflects feed intake and transi -
+tion cow health [ 10]. Walking activity is strongly associ -
+ated with estrus expression [ 11]. By accurately detecting 
+these behaviors, automated monitoring systems can 
+function as early warning tools for health, reproductive, 
+and welfare management in precision dairy farming.
+Accelerometers have been widely validated as effective 
+tools for detecting fundamental cattle behaviors such as 
+lying, standing, and eating, with high precision and sen -
+sitivity reported in several studies using neck- or leg-
+mounted devices [9, 10, 12]. While their ability to capture 
+linear motion makes them well-suited for classifying pos-
+tural states, they are less effective at detecting rotational 
+or complex movements such as head motions, walking, 
+or transitions between lying and standing, often resulting 
+in misclassification [ 9, 10, 13]. Gyroscopes, which mea -
+sure angular velocity, provide complementary informa -
+tion on rotational dynamics and have shown improved 
+accuracy in detecting complex or dynamic behaviors 
+when integrated into classification models —achieving 
+performance rates as high as 99% in some applications 
+[9, 13, 14, 18]. The integration of accelerometer and gyro-
+scope data is particularly valuable in labor-constrained or 
+pasture-based environments, where continuous obser -
+vation is impractical. It is also becoming increasingly 
+important for precision management systems that rely on 
+accurate, cow-specific behavior recognition [2, 15–17].
+Although these findings are promising, the stand -
+alone and integrated use of gyroscope data remains 
+insufficiently explored under real-world farming condi -
+tions, where factors such as sensor displacement, envi -
+ronmental interference, and individual variability may 
+compromise data integrity [ 12]. Moreover, most exist -
+ing classification models aggregate data across multiple 
+animals, potentially obscuring individual variability in 
+movement patterns. Such aggregation can mask subtle, 
+cow-specific behavioral patterns, ultimately reducing 
+the precision and applicability of classification models 
+[13, 14]. Few studies have systematically evaluated and 
+compared the performance of accelerometer-only, gyro -
+scope-only, and combined sensor models at the individ -
+ual-cow level, revealing a significant gap in the literature. 
+Addressing this gap is essential for advancing individual-
+based monitoring systems capable of accurately inter -
+preting the unique behavioral patterns of each animal, 
+thereby improving animal welfare and farm management 
+practices [10].
+This study aims to evaluate the performance of acceler -
+ometer, gyroscope, and combined sensor configurations 
+for classifying cattle behaviors at the individual animal 
+level. It addresses a critical knowledge gap by examin -
+ing the distinct signal characteristics of each axis (X, Y, 
+Z) from tri-axial accelerometers and gyroscopes in rela -
+tion to four primary behaviors: lying, standing, eating, 
+and walking. To assess the classification performance, 
+models are developed and compared using three sen -
+sor input strategies: accelerometer-only, gyroscope-only, 
+and a combination of both. A Random Forest classi -
+fier is employed due to its robustness in handling noisy, 
+high-dimensional data and its demonstrated effective -
+ness in livestock behavior classification tasks [ 15, 16]. 
+By conducting the analysis at the individual animal level 
+rather than aggregating data across multiple animals, this 
+research provides refined insights into movement-based 
+behavioral classification. The findings are expected to 
+inform the development of more precise and adaptable 
+monitoring systems tailored to individual cattle, thereby 
+advancing individualized livestock management.
+Materials and methods
+Animal management
+The study was conducted over a three-month period 
+(August to October 2021) at the loose barn of the Farm 
+Animal Hospital, Faculty of Veterinary Science, Chul -
+alongkorn University, Nakhon Pathom, Thailand. Seven 
+heifers (75–87.5% Holstein-Friesian) were housed in a 
+30 × 15  m concrete-floored enclosure designed to allow 
+free movement and expression of natural behaviors. 
+The cows were fed a total mixed ration comprising 80% 
+roughage and 20% concentrate (on a dry matter basis) at 
+2.5% of body weight, provided twice daily at 09:00 and 
+14:00  h. Clean drinking water was available ad libitum 
+throughout the study period.
+Sensor configuration and placement
+Acceleration and angular velocity were continuously 
+recorded over 90 days using a custom-built activity 
+meter operating 24 h per day. The device was developed 
+in-house and comprised a tri-axis accelerometer and 
+--- PAGE 3 ---
+Page 3 of 19
+Pongsanun et al. BMC Veterinary Research          (2025) 21:677 
+gyroscope sensor (MPU-6050, InvenSense Inc., Califor -
+nia, USA), integrated with a wireless module, microcon -
+troller, 3,700 mAh lithium battery, external antenna, and 
+Wi-Fi router (Fig. 1, left). The device stored mean values 
+for each axis over consecutive 10-second intervals, cor -
+responding to an effective sampling frequency of 0.1 
+Hz. The MPU-6050 includes an onboard digital motion 
+processor capable of processing 6-axis motion data. The 
+accelerometer and gyroscope featured full-scale mea -
+surement ranges of ± 2, ±4, ± 8, and ± 16 g, and ± 250, 
+±500, ± 1000, and ± 2000°/s, respectively [17].
+The sensor system was supported by a LoRa mainboard 
+(Heltec Automation, Sichuan, China) for power man -
+agement and wireless data transmission. Devices were 
+enclosed in 3D-printed housings and securely mounted 
+on the right side of each cow’s neck using adjustable col -
+lars (Fig. 1, right) [ 18]. Antennas were positioned within 
+50 m of the sensors to ensure consistent data communi -
+cation with the gateway. The sensor axes were oriented 
+relative to the animal’s body as follows: the X-axis aligned 
+with the forward–backward direction (parallel to the 
+neck length), the Y-axis with the vertical direction (up–
+down), and the Z-axis with the lateral direction (left–
+right). Figure 1 illustrates the mounting position and axis 
+orientation. Antennas were positioned within 50 m of the 
+sensors to ensure consistent data communication with 
+the gateway.
+A dedicated computer, connected via LAN to a Wi-Fi 
+router, served as the data collection hub. The system uti -
+lized XAMPP (Apache Friends, Berlin, Germany) for pre-
+liminary server testing and phpMyAdmin version 4.8.1 
+(phpMyAdmin Project, www.phpmyadmin.net) for SQL-
+based data management.
+Data processing and analysis
+The overall workflow of this study comprises three main 
+stages: data acquisition, data preparation, and classi -
+fication model development. These stages represent a 
+structured process that begins with the collection of 
+synchronized sensor and behavioral data, continues with 
+systematic data cleaning and feature preparation, and 
+concludes with the development and evaluation of classi -
+fication models using supervised machine learning tech -
+niques. As illustrated in Fig.  2, this framework provides 
+the basis for the detailed methodological descriptions 
+presented in the following sections.
+Data acquisition
+Sensor data were continuously recorded over a 90-day 
+period and stored in time-series format with time -
+stamp annotations. Simultaneously, cow behaviors were 
+recorded using a closed-circuit television (CCTV) sys -
+tem operating at 15 frames per second. Synchronization 
+between video footage and sensor data was achieved 
+through precise timestamp alignment.
+Two trained observers independently annotated behav-
+iors by reviewing 24-hour video recordings throughout 
+the 90-day study. Each time window was labeled as lying, 
+standing, eating, or walking based on a standardized 
+ethogram [19, 20]. To ensure consistency, both observers 
+underwent joint training and annotated a pilot dataset to 
+harmonize behavior interpretation. Inter-observer reli -
+ability was assessed using Cohen’s Kappa on randomly 
+selected video segments. A 5% random subset of the 
+dataset, sampled across individual cows and time peri -
+ods, was annotated by both observers to ensure behav -
+ioral and temporal diversity. Inter-observer reliability, 
+assessed using Cohen’s Kappa, was 0.84, indicating strong 
+consistency. Discrepancies were resolved through discus-
+sion and consensus meetings. Annotation was conducted 
+blind to the study’s hypotheses and model development, 
+in line with best practices outlined in recent video-based 
+annotation studies.
+Segments containing artifacts, missing values, or 
+overlapping behaviors were excluded from analysis. 
+Although seven behaviors were initially annotated, only 
+four including lying, standing, eating, and walking were 
+retained for model development. Drinking was excluded 
+Fig. 1 Prototype of the tri-axial accelerometer and gyroscope sensor (left) and placement on the cow (Right). Arrows indicate the orientation of the X 
+(forward–backward), Y (vertical), and Z (lateral) axes relative to the cow’s body
+ 
+--- PAGE 4 ---
+Page 4 of 19
+Pongsanun et al. BMC Veterinary Research          (2025) 21:677 
+due to an insufficient number of observed instances, 
+while ruminating and other were removed because of 
+substantial overlap with other behaviors and ambigu -
+ous neck movements that reduced classification reli -
+ability. Estrus-related behaviors were also excluded to 
+ensure that the analysis focused on basal activities and 
+the comparative effects of sensor type under stable con -
+ditions. Estrus episodes are brief and characterized by 
+unusually high-amplitude, high-frequency activity that 
+may distort baseline signal profiles of the four target 
+behaviors. Furthermore, estrus-specific actions such as 
+mounting, or chin resting are not directly comparable 
+to postural or locomotor states and thus fall outside the 
+scope of the present behavioral annotation framework. 
+Consequently, the final dataset included only four clearly 
+distinguishable and mutually exclusive behaviors, as 
+defined in Table 1.
+Data preprocessing
+Sensor data preprocessing was performed using Python 
+within a Jupyter Notebook environment. The workflow 
+included data import, inspection, cleaning, noise filter -
+ing, and feature extraction. Prior to automated process -
+ing, raw data were manually reviewed to ensure format 
+consistency and structural completeness.
+Data cleaning
+The sensor was configured to record data every second. 
+For each 10-second interval, the mean of these ten values 
+was calculated and stored in the database, resulting in a 
+sampling rate of 0.1 Hz (one value every 10 s) for further 
+analysis. Each data window was therefore defined as a 
+fixed 10-second segment. To maintain temporal consis -
+tency, windows showing timestamp deviations greater 
+Table 1 Definition of cow behaviors
+Behavior Definition
+Lying The cow is in a resting posture with the ventral 
+body surface in contact with the ground, sup-
+ported by the sternum and one or both thighs. The 
+neck is positioned either vertically or horizontally 
+and may be flexed backward toward the hindquar-
+ters. Lateral recumbency, in which the cow lies 
+fully on its side, was excluded from this category to 
+maintain consistency in posture-based labeling.
+Standing The cow remains upright, supported by at least 
+three legs, without forward or backward move-
+ment. The neck is aligned along the vertical axis, 
+although minor movements related to comfort or 
+social interactions may occur.
+Eating The cow stands in the feeding area on at least three 
+legs with its head lowered into the feed bunk to in-
+gest or masticate feed. The behavior is considered 
+to end when the cow raises its head and maintains 
+that position for at least five consecutive seconds.
+Walking The cow exhibits progressive movement, either 
+forward or backward, covering more than two feet. 
+The behavior involves sequential limb movements, 
+with the head generally held in an upright position.
+Fig. 2 Conceptual framework of this study
+ 
+--- PAGE 5 ---
+Page 5 of 19
+Pongsanun et al. BMC Veterinary Research          (2025) 21:677 
+than ± 1 s, which indicates signal loss or transmission 
+errors, were excluded from analysis in line with estab -
+lished practices [ 15, 21]. This filtering step minimized 
+artifacts and improved the reliability of downstream fea -
+ture extraction. The proportion of excluded segments 
+was minimal and did not substantially affect the overall 
+sample size or behavioral class distribution.
+Missing values, malformed entries, and extreme outli -
+ers were handled using null-value filtering and an inter -
+quartile range (IQR)-based clipping method with a 3× 
+threshold, a standard approach in sensor studies to sup -
+press artifacts while preserving natural variability [ 21, 
+26].
+Prior to feature extraction, the dataset was segmented 
+according to predefined behavioral labels. This ensured 
+that only stable, single-behavior intervals were included, 
+minimizing the influence of behavioral transitions, and 
+enhancing classification accuracy [21–23].
+Feature extraction and selection
+Following preprocessing, the dataset contained one 
+value per axis for each 10-second interval, as provided 
+by the database (see Sect. 3.2.1). For feature generation, 
+we applied a rolling window approach in Python using 
+pandas, with a window size of 1  min (six consecutive 
+10-second data points). This method aggregated con -
+secutive observations to capture temporal variation and 
+facilitated the calculation of descriptive and movement-
+related features (Table 2).
+Within each 1-minute rolling window, a total of 79 
+descriptive features were extracted to characterize the 
+movement patterns of dairy cows. These included time-
+domain statistical metrics (mean, standard deviation, 
+minimum, maximum, sum, root mean square [RMS], 
+kurtosis, interquartile range [IQR], and zero-crossing 
+rate), as well as magnitude descriptors such as signal 
+magnitude area (SMA) and signal vector magnitude 
+(SVM) derived from Euclidean combinations of the tri-
+axial signals [ 24, 25]. Movement-specific indicators were 
+also calculated, including dynamic body acceleration on 
+each axis (DBAX, DBAY, DBAZ), overall dynamic body 
+acceleration (ODBA), and vectorial dynamic body accel -
+eration (VeDBA) [26].
+In total, 42 features were derived from the accelerom -
+eter and 37 from the gyroscope, utilizing both raw axis 
+values and composite measures. For each statistical met -
+ric (mean, standard deviation, maximum, minimum), 
+five features were generated: three from the raw tri-
+axial signals (X, Y, Z) and two from derived magnitudes 
+(SVM and SMA). The DBA category comprised DBAX, 
+DBAY, DBAZ, ODBA, and VeDBA. Statistical features 
+of SVM and SMA including Interquartile Range (IQR), 
+Root Mean Square (RMS), Kurtosis, and Number of Zero 
+Crossings were excluded from the model inputs due to 
+their limited relevance and low statistical contribution, in 
+order to reduce the risk of overfitting. A detailed break -
+down of feature categories and sensor-specific counts is 
+provided in Table 2. To ensure data integrity, any win -
+dow containing missing or undefined values in one or 
+more axes was excluded prior to feature extraction [ 25]. 
+All computations were implemented in Python (version 
+3.10) using NumPy, pandas, and SciPy.
+Classification model development
+To classify cow behaviors, three Random Forest (RF) 
+models were developed using features derived from 
+accelerometer data, gyroscope data, and a combined fea -
+ture set. The combined model refers to a single Random 
+Forest trained simultaneously with both accelerometer 
+and gyroscope features. To preserve class distribution, 
+the labeled dataset was initially split using stratified sam -
+pling into training/validation (80%) and testing (20%) 
+subsets. The training/validation set was further divided 
+(80:20) for hyperparameter tuning and model selection.
+Feature selection was conducted using Recursive Fea -
+ture Elimination (RFE) with F1-score–based cross-
+validation, implemented through scikit-learn. RFE was 
+applied independently for each cow-specific dataset to 
+Table 2 Number of features derived from Raw tri-axial 
+accelerometer (Acc), gyroscope (Gyr), and combined (Com) 
+signals, downsampled to 0.1 Hz by computing the mean at each 
+timestamp and stored in the database
+Feature Category Description Number of 
+features
+Acc Gyr Com
+Features calculated from tri-axial signal data retrieved from the data-
+base (sampling rate: 0.1 Hz)
+ Raw signal Tri-axial raw values 
+(X, Y, Z)
+3 3 6
+ Signal magnitude area (SMA) Sum of the value 
+(|X|+|Y|+|Z|)
+1 1 2
+ Signal vector magnitude 
+(SVM)
+Sum of the 
+value
+√
+(X2+Y 2+Z2)
+1 1 2
+Features derived using a 1-minute rolling window
+ Mean Average values 5 5 10
+ Standard deviation Spread from mean 5 5 10
+ Maximum Maximum value 5 5 10
+ Minimum Minimum value 5 5 10
+ Interquartile range* 75th − 25th 
+percentile
+3 3 6
+ Root mean square (RMS)* Quadratic mean 3 3 6
+ Kurtosis* Signal sharpness 3 3 6
+ Number of zero crossing* Zero-crossing 
+count (demeaned 
+signal)
+3 3 6
+ Dynamic body acceleration Intensity of 
+movement
+5 0 5
+Total 42 37 79
+* SVM and SMA statistical features were excluded
+--- PAGE 6 ---
+Page 6 of 19
+Pongsanun et al. BMC Veterinary Research          (2025) 21:677 
+account for individual variability in movement patterns, 
+consistent with individualized modeling practices in live -
+stock behavior research [ 25]. Recursive Feature Elimina -
+tion (RFE) was applied independently within each cow’s 
+dataset to identify the most informative features for that 
+individual. This individualized feature selection was cho -
+sen to capture inter-animal variability, which was central 
+to the study’s objective of personalized behavior classi -
+fication. To minimize overfitting, we conducted feature 
+selection and model training using a five-fold cross-val -
+idation procedure repeated across ten independent itera -
+tions, which ensured evaluation on previously unseen 
+data. The optimal number of features for each cow was 
+determined by identifying the performance plateau in 
+F1-score trends during Recursive Feature Elimination 
+[27].
+Model implementation was carried out in Python 
+using the scikit-learn library, with support from pandas, 
+NumPy, matplotlib, and joblib. The Random Forest (RF) 
+algorithm, well suited for high-dimensional classification 
+tasks, constructs an ensemble of decision trees, with final 
+predictions determined by majority voting.
+Hyperparameters including the number of trees (n_
+estimators), maximum tree depth (max_depth), and 
+minimum sample thresholds for node splitting (min_
+samples_split, min_samples_leaf) were optimized using 
+grid search with 5-fold cross-validation. This approach 
+enabled performance evaluation across rotating valida -
+tion sets while mitigating overfitting. To ensure robust -
+ness, each model was evaluated over 10 independent 
+iterations, and averaged performance metrics were 
+reported. A fixed random seed was applied to each itera -
+tion to ensure reproducibility throughout the modeling 
+process.
+Model performance was evaluated using standard mul -
+ticlass classification metrics: accuracy, precision, sensitiv-
+ity (recall), and F1-score. Each metric was calculated on a 
+per-class basis using a one-vs-rest strategy and summa -
+rized through macro-averaging ensuring equal weighting 
+across all behavior classes [ 28]. The following formulas 
+were used to compute these metrics:
+Precision = TP/(TP + FP).
+Sensitivity (Recall) = TP/(TP + FN).
+F1-Score = 2 × (Precision × Recall)/
+(Precision + Recall).
+Accuracy = Correct predictions/Total predictions.
+Where TP = true positives, FP = false positives, and 
+FN = false negatives. To address class imbalance across 
+behavior categories, the class_weight=’balanced’ parame -
+ter was performed during optimum feature selection and 
+model training. All modeling procedures were executed 
+independently for each individual cow (Cow 1 to Cow 7) 
+using a standardized and reproducible pipeline.
+Statistical analysis
+To preserve animal-level variability and avoid bias from 
+data pooling, all analyses were conducted at the individ -
+ual cow level (i.e., on a cow-by-cow basis). This approach 
+enabled evaluation of both signal characteristics and 
+machine learning (ML) performance within each animal, 
+rather than aggregating results across the population. 
+Accordingly, statistical comparisons and performance 
+metrics were stratified by individual to capture between-
+animal heterogeneity in sensor signal patterns and behav-
+ioral expression. Statistical analyses were performed to 
+evaluate differences in raw sensor signals and machine 
+learning (ML) performance across four behavioral cat -
+egories: lying, standing, eating, and walking. The Shap -
+iro–Wilk test was used to assess normality and guide the 
+selection of appropriate statistical tests. For normally dis-
+tributed variables, one-way ANOVA followed by Tukey’s 
+Honest Significant Difference (HSD) test was applied. 
+When the assumption of normality was violated, the 
+Kruskal–Wallis test with Dunn’s post hoc comparisons 
+(Bonferroni-adjusted) was used [ 11, 29]. Homogeneity of 
+variance was assumed for ANOVA and assessed through 
+visual inspection of distributional characteristics. Statis -
+tical significance was defined as p < 0.05. Group-level dif-
+ferences were annotated using letter-based significance 
+groupings generated by the multcompLetters and cldList 
+functions.
+Comparisons were conducted across sensor types, sig -
+nal axes (AccX, AccY, AccZ, GyroX, GyroY, GyroZ), as 
+well as derived features such as signal magnitude area 
+(SMA) and signal vector magnitude (SVM). Descrip -
+tive statistics including mean, standard deviation, range, 
+median, and interquartile range were computed using R 
+(version 4.3.1, RStudio Build 2023.06.1 + 524) with the 
+dplyr, data.table, and rcompanion packages. To ensure 
+reliable inference, only groups with a minimum of three 
+valid observations were included in the analysis.
+Machine learning (ML) performance metrics, includ -
+ing accuracy, precision, sensitivity, and F1-score, were 
+compared across sensor types for each behavior using 
+the same test-selection strategy described above. This 
+stratified approach accounted for differences in clas -
+sification difficulty among behaviors [ 15]. To assess the 
+effect of class weighting, performance metrics (precision, 
+sensitivity, F1-score, accuracy) were compared between 
+weighted and unweighted models across 10 iterations 
+per cow and behavior. The normality of the differences 
+between weighted and unweighted results was assessed; 
+independent t-tests were applied to metrics that met the 
+normality assumption, while Mann–Whitney U tests 
+were for non-normally distributed data.
+--- PAGE 7 ---
+Page 7 of 19
+Pongsanun et al. BMC Veterinary Research          (2025) 21:677 
+All descriptive summaries, statistical results, and signif-
+icance groupings were consolidated and exported using 
+the openxlsx package. Statistical analyses were imple -
+mented in R using the FSA, rcompanion, multcompView, 
+and ggplot2 packages.
+In addition to individual-cow analyses, pooled descrip -
+tive summaries (mean ± SE across all cows) were also 
+calculated for raw signals, derived features, and model 
+performance. These pooled values were included to com -
+plement the individualized approach and to illustrate 
+herd-level tendencies.
+Results
+Sample Description
+A total of 1,061,891 observations were collected from 
+seven dairy cows over 90-day period using accelerometer 
+and gyroscope sensors. After excluding technical fail -
+ures, missing values, and estrus-related behaviors (53,095 
+observations), 784,530 observations (83.06%) remained 
+for analysis, representing 1,794.1 h of synchronized sen -
+sor and video-annotated data. Five cows contributed 
+90.7% of the dataset, while the remaining two accounted 
+for 9.3%. The distribution of behavioral observations 
+across the four target classes including lying, eating, 
+standing, and walking is presented in Table 3. The dataset 
+also included overlapping behaviors, such as rumination, 
+which occasionally occurred concurrently with other 
+activities.
+Behavioral signal patterns
+Accelerometer signals (AccX, AccY, AccZ) recorded over 
+a 24-hour period for seven individual cows. Background 
+colors correspond to ground-truth behavioral labels 
+(lying, standing, eating, walking) derived from synchro -
+nized manual video annotation. These annotations were 
+used as the reference labels for model development and 
+provide context for interpreting axis-specific variation in 
+signal intensity across behaviors.
+Tri-axial accelerometer data revealed distinct signal 
+profiles corresponding to different behavioral states in 
+dairy cows. Lying behavior was associated with low and 
+stable values across all axes, particularly on the AccY 
+axis, and corresponded to minimal movement. Moder -
+ate signal fluctuations were observed during standing 
+and eating, with eating showing slightly greater variation. 
+Walking behavior occurred intermittently and did not 
+consistently result in elevated signal magnitudes across 
+all axes. These patterns, derived from continuous 24-hour 
+recordings, are visualized in Fig.  3, which displays anno -
+tated time-series plots across seven individual cows.
+A clear diurnal rhythm was evident in the temporal dis-
+tribution of behaviors. Walking and eating occurred more 
+frequently during daylight hours (09:00–17:00), while 
+lying behavior predominated during nighttime, reflecting 
+rest-activity cycles typical of dairy cattle. Despite general 
+consistency in these trends, subtle individual differences 
+in signal amplitude and behavior duration were observed 
+across cows.
+Gyroscope signals (GyroX, GyroY, GyroZ) recorded 
+over a 24-hour period for seven individual cows. Back -
+ground colors represent ground-truth behavioral anno -
+tations obtained from synchronized video observation. 
+These labels were applied consistently across individuals 
+to illustrate behavior-specific differences in gyroscope 
+signal dynamics.
+Tri-axial gyroscope data described rotational signal 
+patterns across behaviors in dairy cows. Angular veloc -
+ity profiles varied across behaviors, with lying consis -
+tently associated with low values across all axes. Standing 
+showed moderate gyroscopic variation, while eating 
+exhibited broader and more irregular angular fluctua -
+tions, particularly along the GyroX and GyroY axes, 
+where several high-amplitude peaks were observed. 
+Walking appeared intermittently and did not consistently 
+produce distinguishable increases in angular velocity. 
+Among all axes, GyroY demonstrated the largest dynamic 
+range, which indicates higher sensitivity to rotational 
+activity. Figure 4 also illustrates inter-animal variability in 
+signal amplitude, suggesting cow-specific movement pro-
+files within the same behavior.
+Signal Vector Magnitude derived from accelerom -
+eter (SVM_acc) and gyroscope (SVM_gyro) data over a 
+24-hour period for seven individual cows. Background 
+colors correspond to ground-truth behavioral states 
+(lying, standing, eating, walking) derived from synchro -
+nized video annotation.
+The signal vector magnitudes derived from accelerom -
+eter (SVM_acc) and gyroscope (SVM_gyro) data exhib -
+ited distinct behavioral patterns over a 24-hour period 
+(Fig. 5). Lying was consistently characterized by low val -
+ues in both measures, reflecting minimal translational 
+and rotational activity. Eating produced irregular and ele-
+vated peaks, with SVM_acc capturing frequent head and 
+neck movements and SVM_gyro occasionally exceeding 
+Table 3 Number of cow data and distribution of behavioral 
+instances across individual animals and activity classes
+Cow No. Count of Labeled Behaviors Total
+Lying Standing Eating Walking
+1 45,051 33,269 6,648 5,950 90,918
+2 100,830 99,042 16,450 6,908 223,230
+3 49,762 49,162 6,224 7,768 112,916
+4 95,752 76,764 21,640 6,125 200,281
+5 18,872 23,625 2,356 2,528 47,381
+6 40,178 31,559 9,936 2,589 84,262
+7 11,004 11,810 1,428 1,300 25,542
+Number of Instances 361,449 325,231 64,682 33,168 784,530
+Instances (%) 46.1 41.5 8.2 4.2 100.0
+--- PAGE 8 ---
+Page 8 of 19
+Pongsanun et al. BMC Veterinary Research          (2025) 21:677 
+60°/s due to high rotational intensity. Standing showed 
+intermediate values in both metrics, sometimes overlap -
+ping with lying at the lower range and eating at the upper 
+range. Walking occurred intermittently and did not con -
+sistently produce clear peaks, although SVM_gyro tended 
+to display greater variability than SVM_acc. While over -
+all patterns were broadly similar across individuals, nota -
+ble inter-cow differences were observed: Cow 3 displayed 
+higher SVM_acc variation, whereas Cows 3 and 4 exhib -
+ited larger SVM_gyro amplitudes compared with others.
+Fig. 3 Accelerometer signal patterns over 24 h in seven cows
+ 
+--- PAGE 9 ---
+Page 9 of 19
+Pongsanun et al. BMC Veterinary Research          (2025) 21:677 
+Sensor signal distribution
+Analysis of raw tri-axial accelerometer signals (AccX, 
+AccY, AccZ) revealed distinct patterns across behavioral 
+states, as detailed in Table 4. Lying and standing exhibited 
+the lowest signal variation across all three axes, consis -
+tent with their classification as low-movement or static 
+behaviors. In contrast, eating behavior was characterized 
+by negative mean values and high standard deviations, 
+Fig. 4 Gyroscope signal patterns over 24 h in seven cows
+ 
+--- PAGE 10 ---
+Page 10 of 19
+Pongsanun et al. BMC Veterinary Research          (2025) 21:677 
+particularly in AccX and AccY, indicating frequent and 
+variable head and neck movements. Walking also showed 
+elevated variability, though generally less pronounced 
+than eating.
+Tri-axial gyroscope signals (GyroX, GyroY, GyroZ) 
+demonstrated clear behavioral distinctions in rota -
+tional movement patterns, as detailed in Table  5. Lying 
+and standing were consistently associated with the 
+Fig. 5 Signal vector magnitudes from accelerometer (SVM_acc) and gyroscope (SVM_gyro) in seven cows
+ 
+--- PAGE 11 ---
+Page 11 of 19
+Pongsanun et al. BMC Veterinary Research          (2025) 21:677 
+lowest mean values and minimal variability across all 
+axes, reflecting limited angular motion during these pos -
+tural states. In contrast, eating and walking produced 
+markedly higher gyroscopic activity, particularly along 
+the GyroY and GyroZ axes, indicative of frequent head 
+and body rotations.
+Descriptive analysis of Signal Vector Magnitude from 
+accelerometer (SVM_acc) and gyroscope (SVM_gyro) 
+data revealed clear behavioral differentiation across the 
+four target activities. Lying behavior consistently pro -
+duced the lowest mean values for both SVM_gyro and 
+SVM_acc, reflecting minimal body movement and rota -
+tional activity, although for SVM_acc, this pattern was 
+observed in five out of seven cows. In contrast, eating 
+produced the highest average SVM values, driven by 
+dynamic head and neck motion. Walking exhibited simi -
+lar SVM_gyro levels to eating in several cows, indicating 
+comparable rotational intensity during these behaviors. 
+Standing, as expected, presented intermediate values.
+Statistical comparisons, conducted at the individ -
+ual-animal level and reported in Table  6, confirmed 
+significant differences between behaviors ( p < 0.05), as 
+denoted by differing lowercase subscripts. However, in 
+Cows 1, 5, and 7, no significant difference was detected 
+between eating and walking for SVM_gyro, suggesting 
+overlapping motion patterns in these more active states. 
+These findings emphasize both the discriminative power 
+of SVM features and the presence of cow-specific varia -
+tion in behavior-related movement dynamics.
+Model performance
+As feature selection was performed independently 
+for each cow, classification results are reported as 
+mean ± standard error across 10 repeated iterations to 
+reflect within-animal model performance.
+The classification performance of Random Forest mod -
+els was evaluated across four behaviors (lying, standing, 
+eating, and walking) using accelerometer, gyroscope, and 
+combined sensor features, with results averaged over 10 
+iterations per cow (Table  7). Overall, models incorpo -
+rating combined sensor features achieved higher preci -
+sion, sensitivity, F1-scores, and accuracy compared to 
+Table 4 Descriptive statistics of Raw tri-axial accelerometer signals (AccX, AccY, AccZ) across behaviors in individual cows
+Cow Behavior N AccX AccY AccZ
+Mean ± SE Min-Max Mean ± SE Min-Max Mean ± SE Min-Max
+Cow No.1 Lying 45,051 0.13 ± 0.28a, A −1.40−2.16 −0.08 ± 0.09a, B −0.49−0.30 0.07 ± 0.19a, C −0.96−1.04
+Standing 33,269 −0.04 ± 0.29b, A −1.94−1.79 −0.07 ± 0.09b, B −0.49−0.30 0.00 ± 0.18b, C −1.05−1.14
+Eating 6,648 −0.30 ± 0.26d, A −1.42−1.67 −0.12 ± 0.13d, B −0.47−0.30 −0.11 ± 0.21d, B −1.06−1.14
+Walking 5,950 −0.14 ± 0.24c, A −1.67−1.70 −0.06 ± 0.11c, B −0.49−0.30 −0.06 ± 0.20c, C −1.06−1.14
+Cow No.2 Lying 100,830 0.14 ± 0.21a, A −0.83−1.70 −0.07 ± 0.09a, B −0.96−0.52 −0.16 ± 0.28a, C −1.16−1.20
+Standing 99,042 −0.02 ± 0.21b, A −2.10−2.08 −0.06 ± 0.09b, B −1.31−1.00 −0.16 ± 0.24a, C −2.00−1.57
+Eating 16,450 −0.31 ± 0.25d, A −2.00−1.69 −0.15 ± 0.12d, B −1.31−0.50 −0.31 ± 0.25c, C −2.00−0.78
+Walking 6,908 −0.08 ± 0.20c, A −1.61−1.42 −0.05 ± 0.11c, B −1.31−1.00 −0.10 ± 0.23b, A −1.52−1.54
+Cow No.3 Lying 49,762 0.09 ± 0.19a, A −0.70−1.23 −0.05 ± 0.06a, B −0.38−0.28 −0.19 ± 0.20a, C −1.39−0.92
+Standing 49,162 −0.01 ± 0.28b, A −1.39−1.47 −0.07 ± 0.10b, B −0.38−0.28 −0.24 ± 0.17b, C −1.39−0.92
+Eating 6,224 −0.29 ± 0.26d, A −1.39−1.43 −0.13 ± 0.13c, B −0.38−0.28 −0.34 ± 0.18d, C −1.39−0.91
+Walking 7,768 −0.04 ± 0.24c, A −1.39−1.47 −0.06 ± 0.12a, B −0.38−0.28 −0.27 ± 0.17c, C −1.38−0.81
+Cow No.4 Lying 95,752 0.12 ± 0.22a, A −1.67−1.94 −0.06 ± 0.07a, B −0.38−0.28 −0.07 ± 0.18a, C −1.22−0.98
+Standing 76,764 −0.03 ± 0.26b, A −1.91−1.99 −0.06 ± 0.08b, B −0.38−0.28 −0.17 ± 0.15b, C −1.22−0.98
+Eating 21,640 −0.25 ± 0.26d, A −1.97−1.99 −0.11 ± 0.10c, B −0.38−0.28 −0.28 ± 0.17d, C −1.22−0.98
+Walking 6,125 −0.07 ± 0.28c, A −1.63−1.94 −0.06 ± 0.10a, B −0.38−0.28 −0.21 ± 0.17c, C −1.22−0.98
+Cow No.5 Lying 18,872 0.11 ± 0.20a, A −1.14−0.98 −0.05 ± 0.05a, B −0.32−0.21 −0.08 ± 0.14a, C −0.71−0.55
+Standing 23,625 −0.08 ± 0.22b, A −1.37−0.97 −0.06 ± 0.07b, B −0.32−0.23 −0.16 ± 0.14b, C −0.92−0.55
+Eating 2,356 −0.28 ± 0.24d, A −1.13−0.84 −0.11 ± 0.10d, B −0.32−0.23 −0.26 ± 0.16d, C −0.92−0.55
+Walking 2,528 −0.16 ± 0.21c, A −0.90−0.72 −0.06 ± 0.09c, B −0.32−0.23 −0.18 ± 0.16c, C −0.92−0.55
+Cow No.6 Lying 40,178 0.12 ± 0.22a, A −1.67−1.74 −0.06 ± 0.07a, B −0.32−0.23 −0.06 ± 0.17a, C −1.22−0.98
+Standing 31,559 −0.04 ± 0.25b, A −1.67−1.74 −0.06 ± 0.08b, B −0.32−0.23 −0.18 ± 0.15b, C −1.22−0.98
+Eating 9,936 −0.27 ± 0.23d, A −1.67−1.74 −0.11 ± 0.10c, B −0.32−0.23 −0.30 ± 0.16d, C −1.22−0.98
+Walking 2,589 −0.07 ± 0.26c, A −1.63−1.74 −0.06 ± 0.10b, B −0.32−0.23 −0.22 ± 0.16c, C −1.22−0.98
+Cow No.7 Lying 11,004 0.04 ± 0.13a, A −0.58−1.00 −0.05 ± 0.06a, B −0.31−0.24 −0.23 ± 0.18a, C −1.39−0.91
+Standing 11,810 −0.05 ± 0.23b, A −0.98−1.00 −0.05 ± 0.08b, B −0.31−0.24 −0.09 ± 0.16b, C −1.48−1.16
+Eating 1,428 −0.34 ± 0.19d, A −0.98−0.63 −0.14 ± 0.11d, B −0.31−0.24 −0.24 ± 0.21a, C −0.98−0.59
+Walking 1,300 −0.22 ± 0.22c, A −0.98−0.44 −0.07 ± 0.12c, B −0.31−0.24 −0.14 ± 0.14c, C −0.61−0.49
+ Different lowercase superscript letters (a–d) indicate statistically significant differences of raw tri-axial accelerometer signal among behaviors (p < 0.05). Uppercase 
+superscript letters (A-C) indicate significant differences of raw tri-axial accelerometer signal among axes (X, Y, and Z) within each behavior (p < 0.05)
+--- PAGE 12 ---
+Page 12 of 19
+Pongsanun et al. BMC Veterinary Research          (2025) 21:677 
+single-sensor models across most cows and behaviors. 
+Lying behavior consistently yielded the highest perfor -
+mance, with F1-scores frequently exceeding 90% and 
+minimal inter-cow variation. Standing exhibited moder -
+ate to high performance, particularly in accelerometer 
+and combined configurations, whereas gyroscope-only 
+models demonstrated greater variability. Eating and 
+walking were more difficult to classify, especially with 
+gyroscope-only models, which often resulted in lower 
+F1-scores and higher variability. Walking classifica -
+tion showed the greatest inconsistency across individu -
+als, with sensitivity values commonly falling below 30%. 
+Across all behaviors, precision values were generally 
+higher than sensitivity, indicating stable positive predic -
+tive capacity.
+To address class imbalance, Table  7 presents model 
+performance with and without class weighting. Statistical 
+testing revealed significant differences across behaviors. 
+For the majority behaviors, lying and standing, perfor -
+mance metrics under the balanced setting generally 
+declined or remained unchanged. In contrast, minority 
+behaviors showed more frequent improvements, par -
+ticularly when gyroscope features were included. For 
+example, in Cow 7, eating precision increased from 75.8% 
+to 79.9% ( p < 0.05). Significant gains were also observed 
+with accelerometer inputs, such as in Cow 5 (82.5% to 
+84.1%, p < 0.05). Walking precision tended to increase 
+in most cows with the inclusion of gyroscope features, 
+although these changes were not consistently significant. 
+Sensitivity declined across nearly all behaviors, with sev -
+eral significant reductions observed after applying class 
+weighting.
+Descriptive results across individual cows are pre -
+sented in Table 7. Lying and standing achieved the high -
+est classification performance across all sensor types, 
+while eating and walking exhibited reduced metrics, 
+particularly in gyroscope-based models. Accelerometer 
+models consistently outperformed gyroscope models for 
+dynamic behaviors, while combined sensors provided 
+moderate improvements.
+Pooled classification results across cows are sum -
+marized in Table  8. These findings reaffirm the 
+Table 5 Descriptive statistics of Raw tri-axial gyroscope signals (GyroX, GyroY, GyroZ) across behaviors in individual cows
+Cow Behavior N GyrX GyrY GyrZ
+Mean ± SE Min-Max Mean ± SE Min-Max Mean ± SE Min-Max
+Cow No.1 Lying 45,051 −0.49 ± 4.32a, A −37.34−33.35 0.68 ± 7.77a, B −63.84−62.88 −1.27 ± 7.13a, C −31.41−33.60
+Standing 33,269 −0.27 ± 10.72b, A −37.34−33.35 0.89 ± 18.65a, B −63.84−62.88 −0.67 ± 10.55b, C −31.41−33.60
+Eating 6,648 0.33 ± 17.16c, A −37.34−33.35 1.75 ± 22.92b, B −63.84−62.88 −0.86 ± 14.27b, C −31.41−33.60
+Walking 5,950 −0.22 ± 15.62ab, A −37.34−33.35 0.99 ± 24.75a, B −63.84−62.88 −0.75 ± 14.27b, A −31.41−33.60
+Cow No.2 Lying 100,830 0.79 ± 4.50a, A −36.54−52.89 0.08 ± 13.86a, B −147.92−151.69 0.21 ± 3.85a, C −67.61−67.03
+Standing 99,042 1.07 ± 10.12b, A −36.54−52.89 −1.16 ± 23.61b, B −207.18−350.75 0.11 ± 9.68b, C −67.61−67.03
+Eating 16,450 1.98 ± 16.56c, A −36.54−52.89 −3.45 ± 33.39c, B −361.56−350.75 −0.03 ± 13.92b, C −67.61−67.03
+Walking 6,908 1.83 ± 16.45c, A −36.54−52.89 −2.89 ± 35.68c, B −259.52−307.69 0.42 ± 14.69a, C −67.61−67.03
+Cow No.3 Lying 49,762 −0.19 ± 4.97a, A −39.80−49.44 −0.26 ± 8.54a, B −47.40−48.96 0.07 ± 5.02a, AB −44.36−49.20
+Standing 49,162 −0.16 ± 11.04a, A −39.80−49.44 0.27 ± 20.51b, B −47.40−48.96 0.69 ± 11.88b, B −44.36−49.20
+Eating 6,224 0.29 ± 16.30b, A −39.80−49.44 3.89 ± 27.14d, B −47.40−48.96 −0.71 ± 16.50d, C −44.36−49.20
+Walking 7,768 −0.36 ± 16.20a, A −39.80−49.44 −1.97 ± 29.96c, B −47.40−48.96 2.25 ± 17.44c, C −44.36−49.20
+Cow No.4 Lying 95,752 1.17 ± 3.69a, A −58.24−57.92 2.68 ± 6.03a, B −112.12−114.15 −0.15 ± 2.73a, C −42.48−41.78
+Standing 76,764 1.20 ± 13.38ab, A −58.24−57.92 1.99 ± 24.79b, B −112.12−114.15 −0.01 ± 10.57b, C −42.48−41.78
+Eating 21,640 1.41 ± 17.55b, A −58.24−57.92 2.23 ± 26.78b, B −112.12−114.15 −0.10 ± 11.41ab, C −42.48−41.78
+Walking 6,125 0.37 ± 19.77c, A −58.24−57.92 0.37 ± 36.21c, B −112.12−114.15 0.66 ± 14.59c, C −42.48−41.78
+Cow No.5 Lying 18,872 −0.39 ± 6.60a, A −73.10−71.17 1.31 ± 13.70a, B −152.39−166.64 0.00 ± 6.30a, C −62.29−66.41
+Standing 23,625 −0.69 ± 16.29a, A −73.10−71.17 4.51 ± 37.75b, B −152.39−166.64 −1.05 ± 16.32b, A −62.29−66.41
+Eating 2,356 1.82 ± 26.65c, A −73.10−71.17 −0.91 ± 55.06d, B −152.39−166.64 4.61 ± 23.48c, C −62.29−66.41
+Walking 2,528 −2.40 ± 23.31b, A −73.10−71.17 7.68 ± 48.46c, B −152.39−166.64 −1.68 ± 23.04b, A −62.29−66.41
+Cow No.6 Lying 40,178 1.35 ± 3.67ab, A −24.08−26.52 2.98 ± 5.95a, B −36.94−42.37 −0.15 ± 2.58a, C −16.65−16.46
+Standing 31,559 1.29 ± 12.40a, A −24.08−26.52 2.53 ± 21.33b, B −36.94−42.37 −0.09 ± 9.13ab, C −16.65−16.46
+Eating 9,936 1.61 ± 16.19b, A −24.08−26.52 2.55 ± 23.47ab, B −36.94−42.37 0.07 ± 10.17b, C −16.65−16.46
+Walking 2,589 0.58 ± 16.53c, A −24.08−26.52 0.85 ± 27.61c, B −36.94−42.37 0.52 ± 11.50c, C −16.65−16.46
+Cow No.7 Lying 11,004 0.04 ± 3.58a, A −20.09−19.84 0.04 ± 5.81a, B −30.79−31.91 0.28 ± 2.64ab, A −14.78−15.80
+Standing 11,810 −0.62 ± 8.91b, A −20.09−19.84 1.87 ± 15.77b, B −30.79−31.91 1.31 ± 8.03c, B −14.78−15.80
+Eating 1,428 −0.81 ± 14.38abc, A −20.09−19.84 4.99 ± 23.26c, B −30.79−31.91 −0.19 ± 10.86b, A −14.78−15.80
+Walking 1,300 −1.74 ± 15.43c, A −20.09−19.84 2.84 ± 23.15bc, B −30.79−31.91 1.09 ± 11.59ac, AB −14.78−15.80
+Different lowercase superscript letters (a–d) indicate statistically significant differences of raw tri-axial gyroscope signal among behaviors (p < 0.05). Uppercase 
+superscript letters (A-C) indicate significant differences of raw tri-axial gyroscope signal among axes (X, Y, and Z) within each behavior (p < 0.05)
+--- PAGE 13 ---
+Page 13 of 19
+Pongsanun et al. BMC Veterinary Research          (2025) 21:677 
+behavior-specific performance trends observed at 
+the individual level. Lying and standing retained high 
+F1-scores across sensor types, whereas eating and walk -
+ing showed reduced sensitivity and greater variation. 
+Accelerometer and combined configurations consistently 
+outperformed gyroscope-only models, particularly in the 
+classification of walking behavior.
+Discussion
+This study aimed to examine the characteristics of accel -
+erometer and gyroscope signals across four behavioral 
+categories (lying, standing, eating, and walking) and to 
+evaluate the effect of different sensor configurations on 
+classification performance in individual dairy cows. The 
+analysis revealed clear behavioral distinctions in the 
+sensor signal patterns. For instance, lying behavior was 
+associated with lower signal variability, particularly in 
+the gyroscope Z-axis and accelerometer Z-axis. In con -
+trast, walking consistently exhibited higher signal inten -
+sity, especially in the accelerometer X-axis and gyroscope 
+X- and Y-axes. Eating, however, was characterized by 
+elevated and irregular signal amplitudes across both 
+sensor types and multiple axes, notably in GyroY and 
+AccX, reflecting complex head and neck movements. 
+These findings underscore the potential of axis-specific 
+features in distinguishing movement states. The 10-sec -
+ond window length used for segmentation was selected 
+to balance temporal granularity with behavioral stabil -
+ity, allowing for representative movement capture while 
+minimizing noise.
+Regarding classification performance, models utiliz -
+ing both accelerometer and gyroscope data achieved the 
+highest accuracy and F1-scores across all behaviors, out -
+performing those using accelerometer-only or gyroscope-
+only inputs. This advantage was particularly pronounced 
+in behaviors such as lying and standing, which exhibited 
+more subtle signal dynamics. Nevertheless, performance 
+varied across individual cows and behaviors, particu -
+larly in eating and walking, reflecting the influence of 
+cow-specific movement patterns and the inherent com -
+plexity of differentiating between dynamic behaviors. 
+These results collectively highlight the importance of 
+Table 6 Descriptive statistics of signal vector magnitude from accelerometer (SVM_acc) and gyroscope (SVM_gyro) across individual 
+cows behaviors
+Cow Behavior N SVM_acc SVM_gyro
+Mean ± SE Min-Max Mean ± SE Min-Max
+Cow No.1 Lying 45,051 0.33 ± 0.19b 0.01–2.19 7.34 ± 8.84b 0.01–79.48
+Standing 33,269 0.31 ± 0.20c 0.00–2.23 18.82 ± 14.87c 0.07–80.12
+Eating 6,648 0.45 ± 0.19a 0.02–1.81 28.93 ± 13.79a 1.12–80.12
+Walking 5,950 0.31 ± 0.20c 0.01–1.92 29.36 ± 14.12a 0.46–80.12
+Cow No.2 Lying 100,830 0.37 ± 0.20b 0.00–1.78 8.84 ± 12.23b 0.01–153.53
+Standing 99,042 0.31 ± 0.21c 0.00–2.60 21.13 ± 17.59c 0.02–353.92
+Eating 16,450 0.55 ± 0.22a 0.02–2.72 33.93 ± 21.15a 0.04–371.51
+Walking 6,908 0.30 ± 0.19d 0.01–1.98 36.10 ± 21.63d 0.19–313.33
+Cow No.3 Lying 49,762 0.33 ± 0.15b 0.01–1.47 6.56 ± 8.94b 0.02–78.39
+Standing 49,162 0.38 ± 0.18c 0.01–1.80 20.41 ± 16.37c 0.03–81.61
+Eating 6,224 0.54 ± 0.19a 0.03–2.00 32.58 ± 15.12a 1.57–81.23
+Walking 7,768 0.38 ± 0.18d 0.03–1.77 35.51 ± 14.56d 0.60–81.51
+Cow No.4 Lying 95,752 0.29 ± 0.16b 0.00–1.95 4.99 ± 6.41b 0.01–135.00
+Standing 76,764 0.31 ± 0.18c 0.01–2.09 22.50 ± 20.11c 0.08–135.00
+Eating 21,640 0.48 ± 0.18a 0.01–2.21 28.51 ± 18.70a 0.76–135.00
+Walking 6,125 0.36 ± 0.20d 0.03–2.11 35.22 ± 25.98d 0.63–135.00
+Cow No.5 Lying 18,872 0.26 ± 0.14b 0.01–1.15 8.34 ± 14.26b 0.04–181.60
+Standing 23,625 0.28 ± 0.17c 0.00–1.38 32.91 ± 29.92c 0.14–193.70
+Eating 2,356 0.47 ± 0.18a 0.02–1.29 52.90 ± 38.97a 0.56–192.98
+Walking 2,528 0.33 ± 0.17d 0.02–1.08 48.28 ± 34.04a 1.81–192.33
+Cow No.6 Lying 40,178 0.28 ± 0.16b 0.00–1.76 5.27 ± 6.20b 0.05–52.69
+Standing 31,559 0.31 ± 0.18c 0.01–1.95 21.71 ± 15.13c 0.22–52.69
+Eating 9,936 0.48 ± 0.17a 0.04–2.15 27.25 ± 13.52a 0.76–52.69
+Walking 2,589 0.35 ± 0.20d 0.03–2.01 30.90 ± 14.64d 0.63–52.69
+Cow No.7 Lying 11,004 0.30 ± 0.15b 0.03–1.67 4.09 ± 6.08b 0.02–40.76
+Standing 11,810 0.25 ± 0.18c 0.00–1.57 15.96 ± 11.98c 0.04–40.88
+Eating 1,428 0.50 ± 0.18a 0.11–1.16 28.37 ± 9.19a 3.63–40.88
+Walking 1,300 0.34 ± 0.18d 0.03–1.03 28.77 ± 9.50a 3.08–40.88
+ Different lowercase superscript letters (a–d) indicate statistically significant differences (p < 0.05) of mean values among behaviors
+--- PAGE 14 ---
+Page 14 of 19
+Pongsanun et al. BMC Veterinary Research          (2025) 21:677 
+Cow No. Behavior Device Precision Sensitivity F1-score Overall Accuracy
+Cow No.1 Lying Accelerometer 90.5 ± 0.3(90.7 ± 0.2) 94.3 ± 0.3(93.9 ± 0.6) 92.4 ± 0.2(92.3 ± 0.3) 85.8 ± 0.3(85.4 ± 0.4)
+Gyroscope 91.8 ± 0.2(91.9 ± 0.2) 92.7 ± 0.2(92.6 ± 0.4) 92.2 ± 0.2(92.2 ± 0.2) 83.7 ± 0.3(83.7 ± 0.2)
+Combination 93.3 ± 0.2(92.9 ± 0.3)* 95.7 ± 0.3(95.4 ± 0.4)* 94.5 ± 0.2(94.1 ± 0.3)* 87.4 ± 0.5(86.8 ± 0.4)*
+Standing Accelerometer 80.7 ± 0.5(80.0 ± 0.6)* 83.5 ± 0.5(83.5 ± 0.7) 82.1 ± 0.4(81.7 ± 0.5) 85.8 ± 0.3(85.4 ± 0.4)
+Gyroscope 76.8 ± 0.4(76.4 ± 0.4)* 85.9 ± 0.4(86.2 ± 0.5) 81.1 ± 0.3(81.0 ± 0.2) 83.7 ± 0.3(83.7 ± 0.2)
+Combination 82.5 ± 0.7(81.2 ± 0.5)** 86.8 ± 0.3(86.7 ± 0.4) 84.6 ± 0.5(83.9 ± 0.4)* 87.4 ± 0.5(86.8 ± 0.4)*
+Eating Accelerometer 77.1 ± 1.3(76.0 ± 3.0) 63.7 ± 0.9(62.1 ± 3.2) 69.7 ± 1.0(68.3 ± 1.6)* 85.8 ± 0.3(85.4 ± 0.4)
+Gyroscope 59.7 ± 3.5(61.5 ± 2.3) 39.1 ± 2.0(37.4 ± 3.3)* 47.2 ± 2.5(46.5 ± 2.3) 83.7 ± 0.3(83.7 ± 0.2)
+Combination 70.7 ± 2.1(70.8 ± 1.6) 55.6 ± 2.5(51.7 ± 1.8)** 62.2 ± 2.3(59.8 ± 1.4)* 87.4 ± 0.5(86.8 ± 0.4)*
+Walking Accelerometer 78.3 ± 1.2(76.5 ± 3.5) 37.5 ± 1.8(37.2 ± 4.3) 50.7 ± 1.7(49.8 ± 3.5) 85.8 ± 0.3(85.4 ± 0.4)
+Gyroscope 60.2 ± 3.8(63.7 ± 4.4) 21.5 ± 1.7(22.0 ± 3.6) 31.7 ± 2.4(32.4 ± 3.4) 83.7 ± 0.3(83.7 ± 0.2)
+Combination 71.3 ± 2.5(72.7 ± 2.7) 38.8 ± 2.0(35.3 ± 2.8)* 50.3 ± 2.3(47.5 ± 3.0)* 87.4 ± 0.5(86.8 ± 0.4)*
+Cow No.2 Lying Accelerometer 89.7 ± 0.2(90.0 ± 0.2)* 91.4 ± 0.3(90.9 ± 0.3)* 90.5 ± 0.2(90.5 ± 0.2) 86.8 ± 0.3(86.6 ± 0.3)
+Gyroscope 88.8 ± 0.2(88.8 ± 0.2) 91.1 ± 0.3(91.0 ± 0.2) 89.9 ± 0.2(89.9 ± 0.2) 83.7 ± 0.3(83.5 ± 0.2)
+Combination 92.8 ± 0.6(93.0 ± 0.3) 93.8 ± 0.2(93.7 ± 0.3) 93.3 ± 0.4(93.4 ± 0.3) 89.1 ± 0.4(88.9 ± 0.3)
+Standing Accelerometer 85.2 ± 0.4(84.5 ± 0.3)** 88.5 ± 0.3(89.0 ± 0.2)** 86.8 ± 0.3(86.6 ± 0.3) 86.8 ± 0.3(86.6 ± 0.3)
+Gyroscope 80.4 ± 0.3(80.0 ± 0.6)* 88.6 ± 0.2(88.8 ± 0.7) 84.3 ± 0.2(84.2 ± 0.2) 83.7 ± 0.3(83.5 ± 0.2)
+Combination 87.2 ± 0.3(86.5 ± 0.3)** 91.1 ± 0.6(91.4 ± 0.3) 89.1 ± 0.4(88.9 ± 0.3)* 89.1 ± 0.4(88.9 ± 0.3)
+Eating Accelerometer 79.5 ± 0.9(80.6 ± 0.8)* 74.0 ± 0.9(71.3 ± 0.7)** 76.7 ± 0.8(75.7 ± 0.6)* 86.8 ± 0.3(86.6 ± 0.3)
+Gyroscope 65.8 ± 1.5(69.8 ± 4.9)* 27.7 ± 1.1(25.4 ± 4.5)* 39.0 ± 1.3(36.8 ± 3.7)* 83.7 ± 0.3(83.5 ± 0.2)
+Combination 79.5 ± 1.3(80.4 ± 0.8) 73.3 ± 0.7(69.5 ± 0.8)** 76.3 ± 0.8(74.5 ± 0.6)** 89.1 ± 0.4(88.9 ± 0.3)
+Walking Accelerometer 77.5 ± 1.3(75.9 ± 2.7) 17.0 ± 1.7(14.1 ± 1.9)* 27.8 ± 2.4(23.8 ± 2.8)* 86.8 ± 0.3(86.6 ± 0.3)
+Gyroscope 70.9 ± 3.2(71.5 ± 7.5) 8.4 ± 0.8(9.1 ± 2.7) 15.0 ± 1.4(15.9 ± 3.9) 83.7 ± 0.3(83.5 ± 0.2)
+Combination 76.6 ± 2.6(74.4 ± 2.0) 19.0 ± 2.1(15.8 ± 1.0)** 30.4 ± 2.7(26.0 ± 1.5)** 89.1 ± 0.4(88.9 ± 0.3)
+Cow No.3 Lying Accelerometer 90.6 ± 0.3(90.7 ± 0.3) 93.1 ± 0.4(92.8 ± 0.4) 91.8 ± 0.3(91.7 ± 0.2) 85.6 ± 0.4(85.3 ± 0.3)
+Gyroscope 90.7 ± 0.2(90.6 ± 0.3) 94.3 ± 0.2(94.3 ± 0.2) 92.5 ± 0.1(92.4 ± 0.1) 84.7 ± 0.2(84.5 ± 0.3)
+Combination 91.7 ± 0.3(91.7 ± 0.3) 95.1 ± 0.2(95.1 ± 0.3) 93.4 ± 0.2(93.4 ± 0.2) 86.7 ± 0.3(86.6 ± 0.4)
+Standing Accelerometer 80.3 ± 0.6(79.3 ± 0.4)** 84.6 ± 0.5(85.0 ± 0.6) 82.4 ± 0.5(82.1 ± 0.3) 85.6 ± 0.4(85.3 ± 0.3)
+Gyroscope 80.2 ± 0.2(79.6 ± 0.3)** 84.4 ± 0.5(84.5 ± 0.5) 82.3 ± 0.3(82.0 ± 0.3)* 84.7 ± 0.2(84.5 ± 0.3)
+Combination 83.0 ± 0.3(82.4 ± 0.5)* 84.3 ± 0.6(84.8 ± 0.6) 83.7 ± 0.4(83.6 ± 0.5) 86.7 ± 0.3(86.6 ± 0.4)
+Eating Accelerometer 75.6 ± 2.0(76.8 ± 2.3) 58.6 ± 1.9(54.3 ± 2.4)** 66.0 ± 1.8(63.6 ± 1.5)* 85.6 ± 0.4(85.3 ± 0.3)
+Gyroscope 57.3 ± 2.7(57.5 ± 3.6) 25.7 ± 1.4(22.7 ± 1.7)** 35.5 ± 1.5(32.5 ± 2.2)* 84.7 ± 0.2(84.5 ± 0.3)
+Combination 67.5 ± 3.1(68.8 ± 3.7) 53.4 ± 1.6(49.4 ± 2.7)** 59.6 ± 2.1(57.5 ± 2.9) 86.7 ± 0.3(86.6 ± 0.4)
+Walking Accelerometer 79.9 ± 2.7(79.7 ± 2.5) 36.0 ± 1.7(34.4 ± 2.7) 49.6 ± 2.0(48.0 ± 2.5) 85.6 ± 0.4(85.3 ± 0.3)
+Gyroscope 58.8 ± 2.4(60.4 ± 3.0) 38.7 ± 1.6(37.0 ± 1.4)* 46.7 ± 1.6(45.9 ± 1.6) 84.7 ± 0.2(84.5 ± 0.3)
+Combination 69.4 ± 0.9(70.7 ± 1.9) 45.8 ± 2.5(44.1 ± 1.6) 55.2 ± 1.9(54.3 ± 1.5) 86.7 ± 0.3(86.6 ± 0.4)
+Cow No.4 Lying Accelerometer 96.8 ± 0.2(96.9 ± 0.2) 96.8 ± 0.1(96.6 ± 0.2)* 96.8 ± 0.1(96.7 ± 0.1) 94.2 ± 0.2(94.1 ± 0.2)*
+Gyroscope 95.4 ± 0.1(95.5 ± 0.1) 94.0 ± 0.2(93.9 ± 0.2) 94.7 ± 0.1(94.7 ± 0.1) 86.4 ± 0.1(86.1 ± 0.1)**
+Combination 96.5 ± 0.3(96.4 ± 0.1) 96.1 ± 0.3(95.6 ± 0.2)* 96.3 ± 0.3(96.0 ± 0.1)* 91.4 ± 0.5(90.5 ± 0.2)**
+Standing Accelerometer 91.1 ± 0.2(90.5 ± 0.2)** 95.2 ± 0.3(95.4 ± 0.2)* 93.1 ± 0.2(92.9 ± 0.2)* 94.2 ± 0.2(94.1 ± 0.2)*
+Gyroscope 78.3 ± 0.1(77.3 ± 0.2)** 92.3 ± 0.2(92.9 ± 0.2)** 84.7 ± 0.2(84.4 ± 0.1)** 86.4 ± 0.1(86.1 ± 0.1)**
+Combination 86.0 ± 0.7(84.4 ± 0.2)** 94.0 ± 0.5(93.8 ± 0.2) 89.8 ± 0.6(88.9 ± 0.2)** 91.4 ± 0.5(90.5 ± 0.2)**
+Eating Accelerometer 94.0 ± 0.6(94.7 ± 0.5)* 85.9 ± 0.7(84.5 ± 0.8)** 89.8 ± 0.5(89.3 ± 0.6) 94.2 ± 0.2(94.1 ± 0.2)*
+Gyroscope 74.0 ± 1.8(76.9 ± 1.6)** 38.2 ± 0.9(32.5 ± 0.9)** 50.4 ± 1.1(45.7 ± 1.0)** 86.4 ± 0.1(86.1 ± 0.1)**
+Combination 88.3 ± 1.2(87.9 ± 0.6) 74.7 ± 1.8(69.7 ± 0.8)** 80.9 ± 1.5(77.7 ± 0.5)** 91.4 ± 0.5(90.5 ± 0.2)**
+Walking Accelerometer 99.3 ± 0.3(99.4 ± 0.2) 59.9 ± 1.5(58.5 ± 1.5) 74.7 ± 1.2(73.6 ± 1.2) 94.2 ± 0.2(94.1 ± 0.2)*
+Gyroscope 82.6 ± 2.5(83.8 ± 3.0) 9.9 ± 0.6(9.3 ± 0.5)* 17.8 ± 1.0(16.7 ± 0.9)* 86.4 ± 0.1(86.1 ± 0.1)**
+Combination 93.2 ± 1.9(86.5 ± 2.9)** 17.5 ± 2.6(12.6 ± 1.1)** 29.4 ± 3.8(21.9 ± 1.7)** 91.4 ± 0.5(90.5 ± 0.2)**
+Table 7 Comparison of classification performance with and without class weighting across individual cows. Performance metrics 
+(precision, sensitivity, F1-score, and overall accuracy) are reported as mean ± SE over 10 iterations for each cow, behavior, and sensor 
+configuration (accelerometer, gyroscope, and combined). Values shown outside parentheses represent models trained without class 
+weighting, while values in parentheses correspond to results obtained using class_weight = “balanced” . These comparisons highlight 
+the impact of weighted training on improving recognition of minority behaviors and provide context for interpreting the main 
+findings
+--- PAGE 15 ---
+Page 15 of 19
+Pongsanun et al. BMC Veterinary Research          (2025) 21:677 
+incorporating both translational and rotational motion 
+data to enhance behavioral recognition in dairy cows.
+The accurate classification of lying and standing behav -
+iors, particularly by the combined model, is highly rele -
+vant in clinical and management contexts, as deviations 
+in these patterns are early indicators of lameness and 
+metabolic disorders [4, 5]. Similarly, recognition of eating 
+behavior provides critical insights into feed intake and 
+nutritional health [ 10], while walking activity is strongly 
+associated with estrus expression [ 11]. Thus, beyond 
+technical performance, the model’s outputs underscore 
+its potential utility as an early-warning system for repro -
+ductive management, nutritional monitoring, and wel -
+fare assessment in precision dairy farming.
+Behavior-Specific sensor characteristics across 
+different axes
+The tri-axial analysis of accelerometer and gyroscope sig -
+nals revealed distinct axis-specific sensitivities associated 
+with different behavioral states.
+For accelerometer data, the Z-axis consistently exhib -
+ited low and stable values during lying, reflecting minimal 
+vertical displacement, while eating behavior produced 
+the largest deviations, especially along the X- and Y-axes, 
+indicating active head and neck movement. Standing 
+behavior exhibited intermediate signal values across all 
+axes, while walking did not consistently produce elevated 
+or distinctive signal magnitudes, suggesting it may be 
+less distinguishable using raw accelerometer data alone. 
+Cow No. Behavior Device Precision Sensitivity F1-score Overall Accuracy
+Cow No.5 Lying Accelerometer 93.6 ± 0.2(93.8 ± 0.2) 93.4 ± 0.3(92.9 ± 0.3)* 93.5 ± 0.2(93.4 ± 0.2) 87.2 ± 0.3(87.0 ± 0.2)*
+Gyroscope 90.6 ± 0.3(90.6 ± 0.3) 91.4 ± 0.3(91.1 ± 0.3) 91.0 ± 0.2(90.9 ± 0.2) 81.1 ± 0.2(80.9 ± 0.2)*
+Combination 92.6 ± 0.4(92.6 ± 0.3) 93.7 ± 0.3(93.4 ± 0.3)* 93.2 ± 0.3(93.0 ± 0.3) 86.6 ± 0.3(86.3 ± 0.3)*
+Standing Accelerometer 81.1 ± 0.5(80.1 ± 0.3)** 89.5 ± 0.3(90.1 ± 0.3)** 85.1 ± 0.4(84.8 ± 0.2) 87.2 ± 0.3(87.0 ± 0.2)*
+Gyroscope 72.7 ± 0.2(72.0 ± 0.3)** 86.3 ± 0.4(86.9 ± 0.8)* 78.9 ± 0.2(78.8 ± 0.3) 81.1 ± 0.2(80.9 ± 0.2)*
+Combination 80.6 ± 0.4(79.9 ± 0.3)** 88.4 ± 0.4(88.6 ± 0.4) 84.3 ± 0.3(84.0 ± 0.3)* 86.6 ± 0.3(86.3 ± 0.3)*
+Eating Accelerometer 82.5 ± 0.8(84.1 ± 0.7)** 67.0 ± 1.4(64.4 ± 1.2)** 73.9 ± 1.1(72.9 ± 1.0) 87.2 ± 0.3(87.0 ± 0.2)*
+Gyroscope 64.9 ± 2.0(67.2 ± 2.6)* 26.1 ± 1.2(22.0 ± 2.9)* 37.2 ± 1.4(33.0 ± 2.8)* 81.1 ± 0.2(80.9 ± 0.2)*
+Combination 83.0 ± 1.2(83.8 ± 0.9) 64.3 ± 1.3(62.1 ± 0.8)** 72.4 ± 0.9(71.3 ± 0.7)* 86.6 ± 0.3(86.3 ± 0.3)*
+Walking Accelerometer 98.8 ± 1.6(97.6 ± 2.0) 8.8 ± 1.4(7.3 ± 1.2)* 16.2 ± 2.4(13.6 ± 2.1)* 87.2 ± 0.3(87.0 ± 0.2)*
+Gyroscope 77.3 ± 6.0(75.9 ± 8.7) 5.4 ± 1.5(4.2 ± 0.9)* 10.1 ± 2.6(7.9 ± 1.6)* 81.1 ± 0.2(80.9 ± 0.2)*
+Combination 82.7 ± 4.0(78.0 ± 7.1) 7.2 ± 1.8(5.9 ± 0.9) 13.1 ± 3.0(10.9 ± 1.6) 86.6 ± 0.3(86.3 ± 0.3)*
+Cow No.6 Lying Accelerometer 93.9 ± 0.7(93.9 ± 0.7) 95.5 ± 0.6(95.3 ± 0.5) 94.7 ± 0.5(94.6 ± 0.3) 93.1 ± 0.5(92.9 ± 0.4)
+Gyroscope 91.3 ± 0.6(91.4 ± 0.5) 95.0 ± 0.6(95.1 ± 0.4) 93.1 ± 0.5(93.2 ± 0.4) 90.8 ± 0.5(90.8 ± 0.4)
+Combination 95.6 ± 0.5(95.8 ± 0.6) 97.0 ± 0.4(97.1 ± 0.6) 96.3 ± 0.3(96.4 ± 0.5) 94.7 ± 0.4(94.9 ± 0.6)
+Standing Accelerometer 92.5 ± 0.6(92.3 ± 0.5) 93.5 ± 0.9(93.4 ± 0.7) 93.0 ± 0.6(92.9 ± 0.4) 93.1 ± 0.5(92.9 ± 0.4)
+Gyroscope 90.7 ± 0.6(90.5 ± 0.4) 90.7 ± 0.7(90.8 ± 0.6) 90.7 ± 0.6(90.7 ± 0.5) 90.8 ± 0.5(90.8 ± 0.4)
+Combination 94.3 ± 0.3(94.5 ± 0.7) 95.1 ± 0.6(95.2 ± 0.8) 94.7 ± 0.4(94.8 ± 0.6) 94.7 ± 0.4(94.9 ± 0.6)
+Eating Accelerometer 85.7 ± 4.2(83.1 ± 5.9) 61.9 ± 3.4(59.0 ± 5.7) 71.8 ± 2.9(68.8 ± 4.6) 93.1 ± 0.5(92.9 ± 0.4)
+Gyroscope 72.0 ± 10.4(78.9 ± 10.4) 24.2 ± 4.5(21.2 ± 3.7) 36.1 ± 5.8(33.2 ± 5.1) 90.8 ± 0.5(90.8 ± 0.4)
+Combination 84.1 ± 5.0(84.1 ± 5.3) 70.1 ± 4.4(70.5 ± 4.1) 76.4 ± 4.0(76.5 ± 2.1) 94.7 ± 0.4(94.9 ± 0.6)
+Walking Accelerometer 88.8 ± 9.4(84.3 ± 9.6) 23.7 ± 3.8(26.5 ± 10.6) 37.2 ± 4.8(38.9 ± 11.4) 93.1 ± 0.5(92.9 ± 0.4)
+Gyroscope 68.1 ± 9.8(76.1 ± 12.4) 20.0 ± 4.0(17.5 ± 4.2) 30.7 ± 5.2(28.1 ± 5.3) 90.8 ± 0.5(90.8 ± 0.4)
+Combination 73.6 ± 10.7(72.7 ± 12.4) 25.8 ± 5.7(25.8 ± 6.8) 37.8 ± 6.2(37.4 ± 7.1) 94.7 ± 0.4(94.9 ± 0.6)
+Cow No.7 Lying Accelerometer 94.6 ± 0.3(94.7 ± 0.1) 95.2 ± 0.4(94.4 ± 0.4)** 94.9 ± 0.2(94.6 ± 0.1)* 90.1 ± 0.4(89.6 ± 0.3)*
+Gyroscope 92.2 ± 0.5(92.4 ± 0.6) 93.3 ± 0.5(93.2 ± 0.4) 92.8 ± 0.3(92.8 ± 0.4) 86.8 ± 0.5(86.7 ± 0.4)
+Combination 96.1 ± 0.3(96.1 ± 0.3) 96.5 ± 0.3(96.1 ± 0.4)* 96.3 ± 0.2(96.1 ± 0.2)* 91.8 ± 0.3(91.2 ± 0.3)**
+Standing Accelerometer 85.6 ± 0.6(84.4 ± 0.7)* 91.5 ± 0.5(91.6 ± 0.4) 88.5 ± 0.5(87.9 ± 0.3)* 90.1 ± 0.4(89.6 ± 0.3)*
+Gyroscope 80.8 ± 0.8(80.2 ± 0.5) 89.1 ± 0.8(89.5 ± 0.9) 84.7 ± 0.6(84.6 ± 0.6) 86.8 ± 0.5(86.7 ± 0.4)
+Combination 87.4 ± 0.4(86.1 ± 0.5)** 93.6 ± 0.5(93.8 ± 0.4) 90.4 ± 0.4(89.7 ± 0.4)** 91.8 ± 0.3(91.2 ± 0.3)**
+Eating Accelerometer 80.6 ± 2.6(80.8 ± 3.6) 56.0 ± 1.9(53.7 ± 3.8) 66.1 ± 1.8(64.4 ± 2.4) 90.1 ± 0.4(89.6 ± 0.3)*
+Gyroscope 75.8 ± 3.7(79.9 ± 2.9)* 34.1 ± 3.4(31.4 ± 2.3) 47.0 ± 3.9(45.1 ± 2.6) 86.8 ± 0.5(86.7 ± 0.4)
+Combination 82.8 ± 2.8(83.3 ± 2.3) 58.1 ± 2.3(52.5 ± 3.5)** 68.2 ± 2.1(64.3 ± 2.9)* 91.8 ± 0.3(91.2 ± 0.3)**
+Walking Accelerometer 82.0 ± 3.0(80.6 ± 3.0) 38.0 ± 4.1(35.6 ± 7.8) 51.8 ± 4.1(48.9 ± 7.5) 90.1 ± 0.4(89.6 ± 0.3)*
+Gyroscope 80.0 ± 6.3(83.6 ± 5.0) 21.7 ± 3.1(19.0 ± 2.0)* 34.0 ± 4.2(30.9 ± 2.8) 86.8 ± 0.5(86.7 ± 0.4)
+Combination 84.0 ± 3.9(84.5 ± 4.3) 40.5 ± 3.4(33.6 ± 2.9)** 54.6 ± 3.6(47.9 ± 2.9)** 91.8 ± 0.3(91.2 ± 0.3)**
+Bold values indicate the highest-performing device within each behavior category. Asterisks denote statistically significant differences between weighted and 
+unweighted models (* p < 0.05; **p < 0.001)
+Table 7 (continued) 
+--- PAGE 16 ---
+Page 16 of 19
+Pongsanun et al. BMC Veterinary Research          (2025) 21:677 
+These findings align with previous studies indicating that 
+posture-related behaviors typically generate clearer accel-
+erometric patterns than locomotor activities [9, 30].
+For gyroscope signals, all three axes remained relatively 
+stable during lying, with GyroZ showing the lowest varia-
+tion across cows. In contrast, eating was characterized by 
+the highest rotational intensity, particularly in the GyroY 
+and GyroZ axes, suggesting active and frequent head 
+rotations during this behavior. Standing behavior exhib -
+ited moderate angular variation, while walking produced 
+variable, cow-dependent signal patterns that occasionally 
+overlapped with eating in both amplitude and distribu -
+tion. This is consistent with previous gyroscope-based 
+studies, which have shown that rotational movement pat-
+terns are more effective for detecting feeding and tran -
+sition behaviors than for identifying consistent walking 
+signatures [26]. Notably, signal variability differed among 
+cows even within the same behavior, highlighting inter-
+individual differences in movement patterns. These may 
+reflect differences in body conformation, locomotion pat-
+terns, or environmental conditions such as pen structure 
+or feeding space. Such inter-animal variation has been 
+noted in earlier sensor-based studies and underscores 
+the value of personalized models in behavior monitoring 
+[9, 31]. These cow-specific patterns were evident in both 
+signal amplitude and axis distribution, reinforcing the 
+importance of individualized analysis in behavior classi -
+fication systems.
+Overall, these findings underscore the importance 
+of directional sensitivity in interpreting behavioral sig -
+nals. Axis-specific features, particularly from GyroY and 
+AccX/AccY during active behaviors, offer valuable dis -
+criminative power and should be prioritized in sensor 
+placement strategies and feature selection processes for 
+future precision livestock monitoring applications [ 24, 
+32, 33].
+Classification performance and model behavior
+The integration of accelerometer and gyroscope data 
+consistently produced superior classification perfor -
+mance across behaviors and individual cows, highlighting 
+the advantages of sensor fusion for behavioral model -
+ing. Importantly, the combined model used feature-
+level fusion within a single Random Forest. This design 
+ensured that translational and rotational motion features 
+were jointly exploited during training, rather than being 
+handled separately in an ensemble approach.
+Across cows and behaviors, models that combined 
+accelerometer and gyroscope inputs achieved the high -
+est accuracy and F1-scores, consistent with previous 
+precision-livestock findings [ 16, 34]. These gains reflect 
+the complementary nature of the signals: accelerometers 
+capture posture-related linear changes, whereas gyro -
+scopes add rotational context that is informative during 
+dynamic movements. As expected, the accelerometer-
+only model generally outperformed the gyroscope-only 
+model for static behaviors such as lying and standing. 
+Walking remained the most difficult class to classify, 
+showing lower sensitivity and higher variability across 
+cows. Nevertheless, sensor fusion improved robustness, 
+particularly for cows with poor sensitivity in the gyro -
+scope-only model [15].
+Beyond the effects of sensor fusion, the results also 
+illustrate a well-established trade-off inherent in imbal -
+anced classification. Class weighting generally reduced 
+performance in majority behaviors such as lying and 
+standing, yet it consistently improved precision for 
+minority behaviors across several cows. Notably, 
+improvements were observed not only in gyroscope-
+based models (e.g., Cow 7) but also in accelerometer-
+based models (e.g., Cow 5). Walking precision also 
+tended to improve with the inclusion of gyroscope fea -
+tures. In contrast, sensitivity declined across most behav -
+iors, highlighting the precision–sensitivity trade-off  
+widely documented in the imbalanced learning literature 
+[35, 36]. Importantly, improving the detection of eating 
+and walking behaviors is especially valuable in dairy cow 
+monitoring, as these behaviors are relatively infrequent, 
+Table 8 Pooled classification performance (mean ± SE) of 
+random forest models using accelerometer, gyroscope, and 
+combined sensor features across four behavioral categories 
+(lying, standing, eating, and walking). Values represent the 
+average of 10 independent iterations pooled across all seven 
+cows. Metrics include precision, sensitivity, F1-score, and overall 
+accuracy. These pooled results provide descriptive herd-level 
+tendencies and are intended to complement the primary per-
+cow analyses presented in the main text
+Behavior Device Precision Sensitivity F1-score Overall 
+Accuracy
+Lying Acceler-
+ometer
+92.0 ± 0.5 93.8 ± 0.2 92.9 ± 0.3 88.7 ± 0.4
+Gyroscope 92.1 ± 0.1 93.7 ± 0.1 92.9 ± 0.1 85.9 ± 0.1
+Combina-
+tion
+93.5 ± 0.3 95.3 ± 0.2 94.4 ± 0.2 88.9 ± 0.2
+Standing Acceler-
+ometer
+84.9 ± 0.4 89.5 ± 0.7 87.1 ± 0.5 88.7 ± 0.4
+Gyroscope 79.6 ± 0.1 90.2 ± 0.1 84.6 ± 0.1 85.9 ± 0.1
+Combina-
+tion
+84.5 ± 0.2 90.7 ± 0.4 87.5 ± 0.3 88.9 ± 0.2
+Eating Acceler-
+ometer
+88.4 ± 0.6 74.6 ± 0.7 80.9 ± 0.6 88.7 ± 0.4
+Gyroscope 85.5 ± 0.4 35.4 ± 0.4 50.0 ± 0.4 85.9 ± 0.1
+Combina-
+tion
+83.6 ± 0.7 64.5 ± 0.5 72.8 ± 0.5 88.9 ± 0.2
+Walking Acceler-
+ometer
+96.7 ± 0.5 29.9 ± 1.1 45.7 ± 1.2 88.7 ± 0.4
+Gyroscope 89.9 ± 0.9 18.3 ± 0.4 30.4 ± 0.5 85.9 ± 0.1
+Combina-
+tion
+90.3 ± 1.5 19.7 ± 0.3 32.4 ± 0.5 88.9 ± 0.2
+--- PAGE 17 ---
+Page 17 of 19
+Pongsanun et al. BMC Veterinary Research          (2025) 21:677 
+more difficult to classify, and highly informative for herd 
+health and management [37].
+Pooled descriptive metrics confirmed these patterns, 
+showing that combined sensor models consistently out -
+performed single-sensor configurations, particularly for 
+static behaviors such as lying and standing. These results 
+align with individual-level trends and reinforce the utility 
+of sensor fusion for robust behavior classification.
+Contextualization within prior literature
+The findings of this study are broadly consistent with 
+prior research that has employed accelerometer-only or 
+gyroscope-only data for classifying cattle behavior, yet 
+they extend the literature by offering a more nuanced 
+axis-specific and individual-level analysis. Previous stud -
+ies using accelerometer data alone have demonstrated 
+acceptable classification performance for postural behav -
+iors, particularly for lying and standing, due to the sta -
+bility and directionality of gravitational acceleration [ 30]. 
+Similarly, gyroscope-based models have shown advan -
+tages in capturing the rotational aspects of movement, 
+especially during walking or transitional movements [16]. 
+The present study advances beyond previous sensor-level 
+approaches by decomposing axis-specific signal patterns 
+and illustrating their behavioral relevance in a struc -
+tured, cow-specific context. Unlike many earlier studies 
+that aggregated data across animals, this investigation 
+employed modeling at the individual-cow level, reveal -
+ing behavior-specific variability in signal characteristics 
+and classification performance, particularly in eating and 
+walking. These findings suggest that cow-specific loco -
+motor patterns may influence model performance, an 
+aspect often underexplored in pooled analyses. More -
+over, the comparative evaluation of sensor fusion dem -
+onstrated additive benefits, confirming that combining 
+accelerometer and gyroscope data enhances model 
+robustness across behavior types consistent with more 
+recent multi-sensor livestock monitoring studies [10, 32]. 
+Some divergences from earlier findings may be attribut -
+able to differences in sensor placement, window length, 
+sampling rate, or behavioral labeling strategies.
+Strengths, Limitations, Application, and future 
+directions
+This study demonstrated that individualized model -
+ing using combined accelerometer and gyroscope data 
+enhanced classification accuracy for static behaviors such 
+as lying and standing, while also improving robustness 
+for more variable activities such as eating and walking. 
+Strengths of the study include the axis-specific evaluation 
+of sensor signals, the individualized modeling approach, 
+and the extensive dataset covering 90 days of continuous 
+monitoring.
+The use of individualized feature selection allowed the 
+models to capture cow-specific behavioral signatures, 
+which aligns with the study’s focus on individualized 
+monitoring. However, this approach may limit general -
+izability, as the most informative features for one animal 
+may not directly apply to others [ 24]. Although safe -
+guards against overfitting were implemented through 
+repeated cross-validation, individualized RFE remains 
+optimized for within-animal performance rather than 
+across-animal transferability [38]. This trade-off reflects a 
+deliberate design choice to emphasize cow-specific rigor. 
+Future studies should complement this approach with 
+pooled feature selection or cross-cow validation strate -
+gies to evaluate the transferability of models under com -
+mercial herd conditions [39, 40].
+Limitations of this study also include the relatively 
+small sample size of seven cows and the exclusion of 
+infrequent behaviors such as estrus and drinking. Future 
+research should prioritize external validation across 
+diverse production systems and cow populations, as 
+well as extending the behavioral scope to include estrus, 
+ruminating, and other behaviors relevant to health and 
+welfare. These directions represent the most immediate 
+and directly applicable extensions of the current findings.
+Another limitation is that estrus was not evaluated in 
+this study. This exclusion was deliberate, as the study 
+aimed to examine sensor effects on basal behaviors with -
+out interference from reproductive events. Estrus typi -
+cally occurs over a short duration and produces extreme 
+movement amplitudes that can obscure the characteriza -
+tion of lying, standing, eating, and walking [ 41]. In addi -
+tion, some estrus-related behaviors, such as mounting 
+or chin resting, are not posture- or locomotion-based, 
+making them less suitable for inclusion alongside the four 
+focal behaviors [ 42, 43]. Nevertheless, estrus remains 
+a biologically distinct and management-relevant state, 
+and future work should incorporate state-aware model -
+ing strategies or estrus-specific classifiers to address this 
+important reproductive behavior.
+For practical application, rigorous validation under 
+commercial farm conditions will be essential. This is par -
+ticularly relevant in tropical regions, where housing and 
+management practices vary from loose barns to pasture-
+based systems. Such validation will ensure robustness of 
+classification models, refine behavioral thresholds, and 
+support generalizability across diverse environments and 
+production contexts.
+Conclusion
+This study demonstrated that integrating accelerometer 
+and gyroscope data improves the accuracy and robust -
+ness of dairy cow behavior classification, particularly for 
+static behaviors such as lying and standing. Axis-specific 
+analysis revealed that both translational and rotational 
+--- PAGE 18 ---
+Page 18 of 19
+Pongsanun et al. BMC Veterinary Research          (2025) 21:677 
+features contributed significantly to behavior differen -
+tiation, while individual-level modeling captured cow-
+specific variation in movement patterns. The Random 
+Forest classifier performed reliably across behaviors and 
+individuals by utilizing high-dimensional, multimodal 
+features. Despite limitations related to sample size and 
+herd homogeneity, this work establishes a strong foun -
+dation for sensor-based behavior monitoring in preci -
+sion livestock systems. Future research should aim to 
+validate these findings across diverse herds and environ -
+ments, explore temporal deep learning architectures, and 
+expand behavior recognition to include overlapping or 
+complex activities.
+Abbreviations
+AccX, AccY, AccZ  Accelerometer signals along X, Y, and Z axes
+ANOVA  Analysis of variance
+CCTV  Closed-circuit television
+DBA  Dynamic body acceleration
+DBAX, DBAY, DBAZ  Dynamic body acceleration on X, Y, and Z axes
+FN  False negative
+FP  False positive
+GyroX, GyroY, GyroZ  Gyroscope signals along X, Y, and Z axes
+HSD  Honest significant difference
+IQR  Interquartile range
+ML  Machine learning
+ODBA  Overall dynamic body acceleration
+RFE  Recursive feature elimination
+RF  Random forest
+RMS  Root mean square
+SE  Standard error
+SMA  Signal magnitude area
+SVM  Signal vector magnitude
+SVM_acc  Signal vector magnitude from accelerometer
+SVM_gyro  Signal vector magnitude from gyroscope
+TP  True positive
+Wi-Fi  Wireless fidelity
+VeDBA  Vectorial dynamic body acceleration
+Acknowledgements
+The authors would like to express their sincere gratitude to the Director of the 
+Farm Animal Hospital, Faculty of Veterinary Science, Chulalongkorn University, 
+Nakhon Pathom, Thailand, for granting permission to conduct the experiment. 
+The authors also extend their heartfelt appreciation to the animal husbandry 
+team and hospital staff for their continuous support and kind assistance 
+throughout the experimental period.
+Authors’ contributions
+P .K. and C.I. were responsible for the study design and overall 
+conceptualization. A.T., A.L., and S.C. contributed to the design and 
+development of the sensor prototypes and data transmission systems used 
+for data collection. P .K. was responsible for prototype installation and system 
+monitoring to ensure successful data acquisition. P .K. and A.T. conducted 
+behavioral data annotation. All data analyses were performed by P .K. under 
+the supervision of C.I. C.I. secured funding for the research project. The 
+manuscript was drafted by P .K. with critical revisions and editorial input from 
+C.I. All authors have read and approved the final version of the manuscript.
+Funding
+This research was supported by the Research and Researchers for Industries 
+(RRI) program (Contract No. PHD60I0084), the Program Management Unit for 
+Competitiveness (PMUC) (Contract No. 1499287), and the Research Unit of 
+Data Innovation for Livestock, Department of Veterinary Medicine, Faculty of 
+Veterinary Science, Chulalongkorn University, Bangkok, Thailand.
+Data availability
+The cow activity data generated and analyzed during this study is available 
+upon reasonable request from the Center of Excellence in Data Innovation for 
+Sustainable Livestock Production, Department of Veterinary Medicine, Faculty 
+of Veterinary Science, Chulalongkorn University, Bangkok, Thailand. To support 
+reproducibility, a subset of the data comprising both raw and processed 
+activity data is publicly available at the GitHub repository:  h t t p s : / / g i t h u b . c o m / 
+p o n g s a n u n . In addition, all Python scripts used for data manipulation, feature 
+engineering, visualization, and model development, as well as R scripts used 
+for statistical analysis, are provided in the same repository.
+Declarations
+Ethics approval and consent to participate
+This study was approved by the Institutional Animal Care and Use Committee 
+(IACUC) of the Faculty of Veterinary Science, Chulalongkorn University, 
+Thailand (Protocol No. 2031047), in accordance with institutional regulations 
+and the Ethical Principles and Guidelines for the Use of Animals for Scientific 
+Purposes issued by the National Research Council of Thailand.
+Consent for publication
+Not applicable.
+Competing interests
+The authors declare no competing interests.
+Received: 16 May 2025 / Accepted: 1 October 2025
+References
+1. Qiao Y, Guo Y, Yu K, He D. C3D-ConvLSTM based cow behaviour classifica-
+tion using video data for precision livestock farming. Comput Electron Agric. 
+2022;193:106650.
+2. Norton T, Berckmans D. Developing precision livestock farming tools for 
+precision dairy farming. Anim Front. 2017;7(1):18–23.
+3. Halachmi I. M Guarino 2016 Editorial: precision livestock farming: a ‘per Ani-
+mal’ approach using advanced monitoring technologies. Animal 10 9 1482–3.
+4. Walker SL, Smith RF, Routly JE, Jones DN, Morris MJ, Dobson H. Lameness, 
+activity time-budgets, and estrus expression in dairy cattle. J Dairy Sci. 
+2008;91(12):4552–9.
+5. Weigele HC, Gygax L, Steiner A, Wechsler B, Burla JB. Moderate lame-
+ness leads to marked behavioral changes in dairy cows. J Dairy Sci. 
+2018;101(3):2370–82.
+6. Pereira GM, Sharpe KT, Heins BJ. Evaluation of the RumiWatch system as a 
+benchmark to monitor feeding and locomotion behaviors of grazing dairy 
+cows. J Dairy Sci. 2021;104(3):3736–50.
+7. Riaboff L, Shalloo L, Smeaton AF, Couvreur S, Madouasse A, Keane MT. 
+Predicting livestock behaviour using accelerometers: a systematic review of 
+processing techniques for ruminant behaviour prediction from raw acceler-
+ometer data. Comput Electron Agric. 2022;192:106610.
+8. Benaissa S, Tuyttens FAM, Plets D, Martens L, Vandaele L, Joseph W, et al. 
+Improved cattle behaviour monitoring by combining ultra-wideband loca-
+tion and accelerometer data. Anim. 2023;17(4):100730.
+9. Robért B, White B, Renter D, Larson R. Evaluation of three-dimensional 
+accelerometers to monitor and classify behavior patterns in cattle. Comput 
+Electron Agric. 2009;67:80–4.
+10. Benaissa S, Tuyttens FAM, Plets D, de Pessemier T, Trogh J, Tanghe E, et al. On 
+the use of on-cow accelerometers for the classification of behaviours in dairy 
+barns. Res Vet Sci. 2019;125:425–33.
+11. Jiménez A, Bautista F, Galina CS, Romero JJ, Rubio I. Behavioral characteristics 
+of Bos indicus cattle after a superovulatory treatment compared to cows 
+synchronized for estrus. Asian-Australas J Anim Sci. 2011;24(10):1365–71.
+12. Russel NS, Selvaraj A. Decoding cow behavior patterns from accelerometer 
+data using deep learning. J Vet Behav. 2024;74:68–78.
+13. Obermeyer K, Kayser M. On-farm assessment of grazing behaviour of 
+dairy cows in two pasture management systems by low-cost and reliable 
+cowtrackers. Smart Agricultural Technology. 2023;6:100349.
+14. Williams M, Zhan Lai S. Classification of dairy cow excretory events using a 
+tail-mounted accelerometer. Comput Electron Agric. 2022;199:107187.
+--- PAGE 19 ---
+Page 19 of 19
+Pongsanun et al. BMC Veterinary Research          (2025) 21:677 
+15. Martono NP , Sawado R, Nonaka I, Terada F, Ohwada H. Automated Cattle 
+Behavior Classification Using Wearable Sensors and Machine Learning 
+Approach. In: Knowledge Management and Acquisition for Intelligent 
+Systems: 2023// 2023. Singapore: Springer Nature Singapore; 2023. p. 58–69.
+16. Mladenova T, Valova I, Evstatiev B, Valov N, Varlyakov I, Markov T, et al. Evalu-
+ation of the efficiency of machine learning algorithms for identification of 
+cattle behavior using accelerometer and gyroscope data. AgriEngineering. 
+2024;6:2179–97.
+17. Pokydko M, Oliinyk O, Tymchenko V. MEMS Gyroscope Based on MPU-6050 
+Sensor and ATmega328 Microcontroller. In: 2024 IEEE 7th International Con-
+ference on Smart Technologies in Power Engineering and Electronics (STEE): 
+24–26 Sept. 2024 2024; 2024: TT3.39.31-TT33.39.36.
+18. Dang TH, Dang NH, Tran VT, Chung WY. A LoRaWAN-Based Smart Sensor Tag 
+for Cow Behavior Monitoring. In: 2022 IEEE Sensors: 30 Oct.-2 Nov. 2022 2022; 
+2022: 1–4.
+19. Catrett CC, Parsons IL, Dentinger JE, Norman DA, Webb SL, Stone AE, et al. 
+PSII-12 identifying behaviors and the ‘normal’ daily ethogram using acceler-
+ometers on grazing animals. J Anim Sci. 2021;99(Supplement3):319–20.
+20. Li K, Fan D, Wu H, Zhao A. A new dataset for video-based cow behavior 
+recognition. Sci Rep. 2024;14(1):18702.
+21. Riaboff L, Aubin S, Bédère N, Couvreur S, Madouasse A, Goumand E, et al. 
+Evaluation of pre-processing methods for the prediction of cattle behaviour 
+from accelerometer data. Comput Electron Agric. 2019;165:104961.
+22. Williams ML, James WP , Rose MT. Variable segmentation and ensemble classi-
+fiers for predicting dairy cow behaviour. Biosyst Eng. 2019;178:156–67.
+23. Nogoy KM, Chon S-i, Park J-h, Sivamani S, Lee D-H, Choi SH. High precision 
+classification of resting and eating behaviors of cattle by using a collar-fitted 
+triaxial accelerometer sensor. Sensors (Basel). 2022.  h t t p  s : /  / d o i  . o  r g /  1 0 .  3 3 9 0  / s  2 
+2 1 6 5 9 6 1.
+24. Pavlovic D, Czerkawski M, Davison C, Marko O, Michie C, Atkinson R, et al. 
+Behavioural classification of cattle using neck-mounted accelerometer-
+equipped collars. Sensors. 2022.  h t t p s :   /  / d o  i .  o r  g  /  1 0  . 3 3   9 0  / s 2 2 0 6 2 3 2 3.
+25. Arablouei R, Currie L, Kusy B, Ingham A, Greenwood PL, Bishop-Hurley G. 
+In-situ classification of cattle behavior using accelerometry data. Comput 
+Electron Agric. 2021;183:106045.
+26. Uenishi S, Oishi K, Kojima T, Kitajima K, Yasunaka Y, Sakai K, et al. A novel 
+accelerometry approach combining information on classified behaviors and 
+quantified physical activity for assessing health status of cattle: a preliminary 
+study. Appl Anim Behav Sci. 2021;235:105220.
+27. Yin Z, Liu L, Liu L, Zhang J, Wang Y. Dynamical recursive feature elimination 
+technique for neurophysiological signal-based emotion recognition. Cogn 
+Technol Work. 2017;19(4):667–85.
+28. Shekar BH, Dagnew G. Grid Search-Based Hyperparameter Tuning and Classi-
+fication of Microarray Cancer Data. In: 2019 Second International Conference 
+on Advanced Computational and Communication Paradigms (ICACCP): 
+25–28 Feb. 2019 2019; 2019: 1–8.
+29. Lozada CC, Park RM, Daigle CL. Evaluating accurate and efficient sampling 
+strategies designed to measure social behavior and brush use in drylot 
+housed cattle. PLoS ONE. 2023;18(1):e0278233.
+30. Martiskainen P , Järvinen M, Skön J-P , Tiirikainen J, Kolehmainen M, Mononen 
+J. Cow behaviour pattern recognition using a three-dimensional accelerom-
+eter and support vector machines. Appl Anim Behav Sci. 2009;119(1):32–8.
+31. Hirata M, Nakayama Y, Tobisa M. Interindividual variability in feeding station 
+behavior in cattle: a preliminary study. Grassl Sci. 2010;56(2):108–15.
+32. Tamura T, Okubo Y, Deguchi Y, Koshikawa S, Takahashi M, Chida Y, et al. Dairy 
+cattle behavior classifications based on decision tree learning using 3-axis 
+neck-mounted accelerometers. Anim Sci J. 2019;90(4):589–96.
+33. Sprinkle JE, Sagers JK, Hall JB, Ellison MJ, Yelich JV, Brennan JR, et al. Predicting 
+cattle grazing behavior on rangeland using accelerometers. Rangel Ecol 
+Manage. 2021;76:157–70.
+34. Kleanthous N, Hussain A, Mason A, Sneddon J. Data science approaches for 
+the analysis of animal behaviours. In: Intelligent computing methodologies: 
+2019// 2019. Cham: Springer International Publishing; 2019. p. 411–22.
+35. Bulavas V, Marcinkevičius V, Rumiński J. Study of Multi-Class classification 
+algorithms’ performance on highly imbalanced network intrusion datasets. 
+Informatica. 2021;32(3):441–75.
+36. Sakai K, Oishi K, Miwa M, Kumagai H, Hirooka H. Behavior classification of 
+goats using 9-axis multi sensors: the effect of imbalanced datasets on clas-
+sification performance. Comput Electron Agric. 2019;166:105027.
+37. Kleanthous N, Hussain A, Khan W, Sneddon J, Mason A. Feature Extraction 
+and Random Forest to Identify Sheep Behavior from Accelerometer Data. In: 
+Intelligent Computing Methodologies: 2020// 2020. Cham: Springer Interna-
+tional Publishing; 2020. p. 408–19.
+38. Zhao Z, Shehada H, Ha D, Dos Reis B, White R, Shin S. Machine learning-driven 
+optimization of livestock management: classification of cattle behaviors for 
+enhanced monitoring efficiency. In: 2024: 85–91.
+39. Smith D, Rahman A, Bishop-Hurley GJ, James H, Shahriar S, Henry D, et al. 
+Behavior classification of cows fitted with motion collars: decomposing 
+multi-class classification into a set of binary problems. Comput Electron 
+Agric. 2016;131:40–50.
+40. Williams M, Parthaláin N, Brewer P , James W, Rose M. A novel behavioral 
+model of the pasture-based dairy cow from GPS data using data mining and 
+machine learning techniques. J Dairy Sci. 2016;99(3):2063–75.
+41. Silper BF, Robles I, Madureira AML, Burnett TA, Reis MM, de Passillé AM, et al. 
+Automated and visual measurements of estrous behavior and their sources 
+of variation in Holstein heifers. I: walking activity and behavior frequency. 
+Theriogenology. 2015;84(2):312–20.
+42. Løvendahl P , Chagunda MGG. On the use of physical activity monitoring for 
+estrus detection in dairy cows. J Dairy Sci. 2010;93(1):249–59.
+43. Yin L, Hong T, Liu C. Estrus detection in dairy cows from acceleration data 
+using Self-learning classification models. J Computers 2013, 8.
+Publisher’s Note
+Springer Nature remains neutral with regard to jurisdictional claims in 
+published maps and institutional affiliations.
