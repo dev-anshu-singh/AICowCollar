@@ -21,7 +21,7 @@ def set_cell_background(cell, hex_color):
     cell._tc.get_or_add_tcPr().append(shading_elm)
 
 def add_page_border(section):
-    """Adds classic double-line page border typical of academic reports."""
+    """Adds classic black double-line page border typical of academic reports."""
     sectPr = section._sectPr
     pgBorders = OxmlElement('w:pgBorders')
     pgBorders.set(qn('w:offsetFrom'), 'page')
@@ -30,7 +30,7 @@ def add_page_border(section):
         border.set(qn('w:val'), 'double')
         border.set(qn('w:sz'), '12')
         border.set(qn('w:space'), '24')
-        border.set(qn('w:color'), '1B365D')
+        border.set(qn('w:color'), '000000')  # Strictly Black
         pgBorders.append(border)
     sectPr.append(pgBorders)
 
@@ -46,23 +46,23 @@ def create_report():
     section.left_margin = Inches(1.0)
     section.right_margin = Inches(1.0)
 
-    # Add double-line page border
+    # Add black double-line page border
     add_page_border(section)
 
     # Header and Footer Setup (different on first page)
     section.different_first_page_header_footer = True
     
-    # Running Header for Body Pages
+    # Running Header for Body Pages (Strictly Black)
     header = section.header
     p_h = header.paragraphs[0]
     p_h.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-    r_h = p_h.add_run("AICowCollar: Smart Cow Collar System | Minor Project Report")
+    r_h = p_h.add_run("Design of a Smart Cow Collar for Health & Position Monitoring | Minor Project Report")
     r_h.font.name = "Times New Roman"
-    r_h.font.size = Pt(9)
+    r_h.font.size = Pt(8.5)
     r_h.italic = True
-    r_h.font.color.rgb = RGBColor(110, 110, 110)
+    r_h.font.color.rgb = RGBColor(0, 0, 0)
 
-    # Running Footer for Body Pages
+    # Running Footer for Body Pages (Strictly Black)
     footer = section.footer
     p_f = footer.paragraphs[0]
     p_f.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -70,9 +70,9 @@ def create_report():
     r_f.font.name = "Times New Roman"
     r_f.font.size = Pt(9)
     r_f.italic = True
-    r_f.font.color.rgb = RGBColor(110, 110, 110)
+    r_f.font.color.rgb = RGBColor(0, 0, 0)
 
-    # Base Styles
+    # Base Styles (Strictly Black)
     normal_style = doc.styles['Normal']
     normal_style.font.name = 'Times New Roman'
     normal_style.font.size = Pt(12)
@@ -92,23 +92,24 @@ def create_report():
             run.italic = italic
             run.font.name = font_name
             run.font.size = Pt(size_pt)
-            run.font.color.rgb = RGBColor(0, 0, 0)
+            run.font.color.rgb = RGBColor(0, 0, 0)  # Strictly Black
         return p
 
     def add_chapter_header(chap_num_str, chap_title_str):
         p1 = add_p(chap_num_str.upper(), align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=14, space_before=16, space_after=2)
-        p1.runs[0].font.color.rgb = RGBColor(139, 0, 0)  # Classic Dark Red
-        p2 = add_p(chap_title_str.upper(), align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=16, space_before=2, space_after=14)
-        p2.runs[0].font.color.rgb = RGBColor(10, 35, 80)   # Deep Navy
+        p1.runs[0].font.color.rgb = RGBColor(0, 0, 0)
+        p2 = add_p(chap_title_str.upper(), align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=15, space_before=2, space_after=14)
+        p2.runs[0].font.color.rgb = RGBColor(0, 0, 0)
         return p2
 
     def add_h2(text):
         p = add_p(text, align=WD_ALIGN_PARAGRAPH.LEFT, bold=True, size_pt=13, space_before=12, space_after=4)
-        p.runs[0].font.color.rgb = RGBColor(10, 35, 80)
+        p.runs[0].font.color.rgb = RGBColor(0, 0, 0)
         return p
 
     def add_h3(text):
         p = add_p(text, align=WD_ALIGN_PARAGRAPH.LEFT, bold=True, italic=True, size_pt=12, space_before=8, space_after=2)
+        p.runs[0].font.color.rgb = RGBColor(0, 0, 0)
         return p
 
     def add_figure(img_path, caption_text, width=Inches(5.5)):
@@ -126,10 +127,11 @@ def create_report():
             p_cap.paragraph_format.space_after = Pt(10)
             r = p_cap.add_run(caption_text)
             r.font.name = "Times New Roman"
-            r.font.size = Pt(10.5)
+            r.font.size = Pt(10)
             r.italic = True
+            r.font.color.rgb = RGBColor(0, 0, 0)
         else:
-            p = add_p(f"[{caption_text}]", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10.5)
+            add_p(f"[{caption_text}]", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10)
 
     # =========================================================================
     # 1. TITLE / COVER PAGE
@@ -138,9 +140,9 @@ def create_report():
     add_p("Minor Project Report", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=17, space_before=2, space_after=4)
     add_p("On", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=12, space_before=1, space_after=6)
     
-    title_p = add_p("Smart Cow Collar Telemetry System for Health Monitoring and Behavior Classification",
-                    align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=18, space_before=4, space_after=12)
-    title_p.runs[0].font.color.rgb = RGBColor(139, 0, 0)
+    title_p = add_p("Design of a Smart Cow Collar for Health and Position Monitoring System using AI&ML",
+                    align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=17, space_before=4, space_after=14)
+    title_p.runs[0].font.color.rgb = RGBColor(0, 0, 0)
 
     add_p("Submitted in partial fulfillment of the requirements for the award of the degree of",
           align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=11, space_before=4, space_after=2)
@@ -165,8 +167,10 @@ def create_report():
     r = p_l.add_run("Submitted by:\n")
     r.bold = True
     r.font.size = Pt(11)
+    r.font.color.rgb = RGBColor(0, 0, 0)
     r2 = p_l.add_run("Devanshu Singh (Roll No. 230103012)\nMahima Patel (Roll No. 230103025)\n\nB.Tech (MAE), VII Semester")
     r2.font.size = Pt(10.5)
+    r2.font.color.rgb = RGBColor(0, 0, 0)
 
     cell_r = table.cell(0, 1)
     p_r = cell_r.paragraphs[0]
@@ -174,8 +178,10 @@ def create_report():
     r = p_r.add_run("Under the Supervision of:\n")
     r.bold = True
     r.font.size = Pt(11)
+    r.font.color.rgb = RGBColor(0, 0, 0)
     r2 = p_r.add_run("Dr. Sunil Kumar\nAssistant Professor\nDepartment of Mechatronics &\nAutomation Engineering\nIIIT Bhagalpur")
     r2.font.size = Pt(10.5)
+    r2.font.color.rgb = RGBColor(0, 0, 0)
 
     add_p("", space_before=8, space_after=4)
 
@@ -200,22 +206,24 @@ def create_report():
 
     add_p("", space_before=4, space_after=2)
 
-    # Institutional Names
+    # Institutional Names (Strictly Black)
     p_hi = add_p("भारतीय सूचना प्रौद्योगिकी संस्थान, भागलपुर", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=12.5, space_before=2, space_after=1, font_name="Nirmala UI")
-    p_hi.runs[0].font.color.rgb = RGBColor(139, 0, 0)
+    p_hi.runs[0].font.color.rgb = RGBColor(0, 0, 0)
 
     p_en = add_p("Indian Institute of Information Technology, Bhagalpur", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=13, space_before=1, space_after=1)
-    p_en.runs[0].font.color.rgb = RGBColor(10, 35, 80)
+    p_en.runs[0].font.color.rgb = RGBColor(0, 0, 0)
 
-    add_p("(An Institute of National Importance Under Act of Parliament)", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10.5, space_before=1, space_after=4)
-    add_p("November 2026", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=11.5, space_before=4, space_after=2)
+    p_sub = add_p("(An Institute of National Importance Under Act of Parliament)", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10.5, space_before=1, space_after=4)
+    p_sub.runs[0].font.color.rgb = RGBColor(0, 0, 0)
+
+    p_dt = add_p("November 2026", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=11.5, space_before=4, space_after=2)
+    p_dt.runs[0].font.color.rgb = RGBColor(0, 0, 0)
 
     doc.add_page_break()
 
     # =========================================================================
     # 2. DECLARATION
     # =========================================================================
-    # Institutional Header
     header_table = doc.add_table(rows=1, cols=2)
     header_table.alignment = WD_TABLE_ALIGNMENT.CENTER
     header_table.autofit = False
@@ -230,19 +238,22 @@ def create_report():
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         p.add_run().add_picture("extracted_report_media/word/media/image2.png", width=Inches(0.80))
 
-    add_p("भारतीय सूचना प्रौद्योगिकी संस्थान, भागलपुर", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=11.5, space_before=3, space_after=1, font_name="Nirmala UI")
-    p = add_p("Indian Institute of Information Technology, Bhagalpur", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=12, space_before=1, space_after=1)
-    p.runs[0].font.color.rgb = RGBColor(10, 35, 80)
-    add_p("(An Institute of National Importance Under Act of Parliament)", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10, space_before=1, space_after=12)
+    p1 = add_p("भारतीय सूचना प्रौद्योगिकी संस्थान, भागलपुर", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=11.5, space_before=3, space_after=1, font_name="Nirmala UI")
+    p1.runs[0].font.color.rgb = RGBColor(0, 0, 0)
+    p2 = add_p("Indian Institute of Information Technology, Bhagalpur", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=12, space_before=1, space_after=1)
+    p2.runs[0].font.color.rgb = RGBColor(0, 0, 0)
+    p3 = add_p("(An Institute of National Importance Under Act of Parliament)", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10, space_before=1, space_after=12)
+    p3.runs[0].font.color.rgb = RGBColor(0, 0, 0)
 
     p_dec = add_p("DECLARATION", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=14, space_before=8, space_after=10)
     p_dec.runs[0].underline = True
+    p_dec.runs[0].font.color.rgb = RGBColor(0, 0, 0)
 
     add_p(
-        "We hereby declare that the Minor Project Report entitled \"AICowCollar: Automated Livestock Health, "
-        "Behavior and Geofence Monitoring via Smart Cow Collar\" submitted to the Department of Mechatronics "
-        "and Automation Engineering, Indian Institute of Information Technology, Bhagalpur, in partial fulfillment of the requirements "
-        "for the award of the degree of Bachelor of Technology, is an authentic record of our own work carried out during the "
+        "We hereby declare that the Minor Project Report entitled \"Design of a Smart Cow Collar for Health and "
+        "Position Monitoring System using AI&ML\" submitted to the Department of Mechatronics and Automation Engineering, "
+        "Indian Institute of Information Technology, Bhagalpur, in partial fulfillment of the requirements for the award "
+        "of the degree of Bachelor of Technology, is an authentic record of our own work carried out during the "
         "academic session 2026-2027.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY, space_before=4, space_after=8
     )
@@ -262,12 +273,14 @@ def create_report():
     sig_table.rows[0].cells[1].width = Inches(3.2)
     
     p = sig_table.cell(0, 0).paragraphs[0]
-    p.add_run("_____________________\nDevanshu Singh\nRoll No.: 230103012\nB.Tech (MAE)")
-    p.runs[0].font.size = Pt(11)
+    r = p.add_run("_____________________\nDevanshu Singh\nRoll No.: 230103012\nB.Tech (MAE)")
+    r.font.size = Pt(11)
+    r.font.color.rgb = RGBColor(0, 0, 0)
     
     p = sig_table.cell(0, 1).paragraphs[0]
-    p.add_run("_____________________\nMahima Patel\nRoll No.: 230103025\nB.Tech (MAE)")
-    p.runs[0].font.size = Pt(11)
+    r = p.add_run("_____________________\nMahima Patel\nRoll No.: 230103025\nB.Tech (MAE)")
+    r.font.size = Pt(11)
+    r.font.color.rgb = RGBColor(0, 0, 0)
 
     doc.add_page_break()
 
@@ -288,25 +301,28 @@ def create_report():
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         p.add_run().add_picture("extracted_report_media/word/media/image2.png", width=Inches(0.80))
 
-    add_p("भारतीय सूचना प्रौद्योगिकी संस्थान, भागलपुर", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=11.5, space_before=3, space_after=1, font_name="Nirmala UI")
-    p = add_p("Indian Institute of Information Technology, Bhagalpur", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=12, space_before=1, space_after=1)
-    p.runs[0].font.color.rgb = RGBColor(10, 35, 80)
-    add_p("(An Institute of National Importance Under Act of Parliament)", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10, space_before=1, space_after=12)
+    p1 = add_p("भारतीय सूचना प्रौद्योगिकी संस्थान, भागलपुर", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=11.5, space_before=3, space_after=1, font_name="Nirmala UI")
+    p1.runs[0].font.color.rgb = RGBColor(0, 0, 0)
+    p2 = add_p("Indian Institute of Information Technology, Bhagalpur", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=12, space_before=1, space_after=1)
+    p2.runs[0].font.color.rgb = RGBColor(0, 0, 0)
+    p3 = add_p("(An Institute of National Importance Under Act of Parliament)", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10, space_before=1, space_after=12)
+    p3.runs[0].font.color.rgb = RGBColor(0, 0, 0)
 
     p_cert = add_p("CERTIFICATE", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=14, space_before=8, space_after=10)
     p_cert.runs[0].underline = True
+    p_cert.runs[0].font.color.rgb = RGBColor(0, 0, 0)
 
     add_p(
-        "This is to certify that the Minor Project Report entitled \"AICowCollar: Automated Livestock Health, Behavior "
-        "and Geofence Monitoring via Smart Cow Collar\" being submitted by Devanshu Singh (Roll No. 230103012) and "
+        "This is to certify that the Minor Project Report entitled \"Design of a Smart Cow Collar for Health and "
+        "Position Monitoring System using AI&ML\" being submitted by Devanshu Singh (Roll No. 230103012) and "
         "Mahima Patel (Roll No. 230103025) in partial fulfillment of the requirements for the award of the degree of "
         "Bachelor of Technology in Mechatronics and Automation Engineering at the Indian Institute of Information Technology, "
         "Bhagalpur, is a bonafide record of project work carried out by them under my supervision and guidance.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY, space_before=4, space_after=8
     )
     add_p(
-        "To the best of my knowledge, the results and system implementation presented in this report are original and "
-        "have not been submitted to any other university or institution for the award of any degree or diploma.",
+        "To the best of my knowledge, the algorithmic developments, system designs, and experimental evaluations presented "
+        "in this report are original and have not been submitted to any other university or institution for the award of any degree or diploma.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY, space_before=4, space_after=24
     )
 
@@ -317,12 +333,14 @@ def create_report():
     cert_table.rows[0].cells[1].width = Inches(3.2)
 
     p = cert_table.cell(0, 0).paragraphs[0]
-    p.add_run("___________________________\nDr. Sunil Kumar\n(Project Supervisor)\nAssistant Professor\nDept. of Mechatronics & Automation Engg.\nIIIT Bhagalpur")
-    p.runs[0].font.size = Pt(11)
+    r = p.add_run("___________________________\nDr. Sunil Kumar\n(Project Supervisor)\nAssistant Professor\nDept. of Mechatronics & Automation Engg.\nIIIT Bhagalpur")
+    r.font.size = Pt(11)
+    r.font.color.rgb = RGBColor(0, 0, 0)
 
     p = cert_table.cell(0, 1).paragraphs[0]
-    p.add_run("___________________________\nHead of Department\nDept. of Mechatronics & Automation Engg.\nIIIT Bhagalpur")
-    p.runs[0].font.size = Pt(11)
+    r = p.add_run("___________________________\nHead of Department\nDept. of Mechatronics & Automation Engg.\nIIIT Bhagalpur")
+    r.font.size = Pt(11)
+    r.font.color.rgb = RGBColor(0, 0, 0)
 
     doc.add_page_break()
 
@@ -331,6 +349,7 @@ def create_report():
     # =========================================================================
     p_ack = add_p("ACKNOWLEDGEMENT", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=14, space_before=6, space_after=8)
     p_ack.runs[0].underline = True
+    p_ack.runs[0].font.color.rgb = RGBColor(0, 0, 0)
 
     add_p(
         "We express our sincere gratitude to our project supervisor, Dr. Sunil Kumar, Assistant Professor in the Department "
@@ -340,36 +359,40 @@ def create_report():
     )
     add_p(
         "We also thank the faculty members and technical staff of the Department of Mechatronics and Automation Engineering for "
-        "providing the necessary laboratory facilities and resources. In addition, we extend our gratitude to our peers and classmates "
-        "for their helpful discussions during the implementation of the telemetry pipeline. Finally, we express our heartfelt thanks "
-        "to our parents and family members for their constant moral support and encouragement.",
+        "providing the necessary computational facilities, laboratory guidance, and academic resources. In addition, we extend our gratitude "
+        "to our peers and classmates for their helpful suggestions during the implementation and testing of the software telemetry pipeline. "
+        "Finally, we express our heartfelt thanks to our parents and family members for their constant moral support and encouragement.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY, space_before=2, space_after=14
     )
 
     p_abs = add_p("ABSTRACT", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=14, space_before=10, space_after=8)
     p_abs.runs[0].underline = True
+    p_abs.runs[0].font.color.rgb = RGBColor(0, 0, 0)
 
     add_p(
         "In modern dairy farming, continuous monitoring of cattle health and physical behavior is essential for early diagnosis of diseases "
         "and efficient herd management. Traditional visual inspection by farm attendants is labor intensive, subjective, and often fails "
-        "to detect illnesses in their early stages. In this project, an automated telemetry system called AICowCollar was designed and developed "
-        "to continuously monitor cattle behavior, physiological vitals, and grazing pasture boundaries.",
+        "to detect illnesses in their early stages. In this minor project, the system design, signal processing methodology, and machine learning "
+        "architecture for an automated smart cow collar platform are proposed and comprehensively evaluated.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY, space_before=2, space_after=6
     )
     add_p(
-        "The proposed system employs a collar unit equipped with a 6-axis inertial motion sensor (MPU-6050 accelerometer and gyroscope), "
-        "a contact temperature sensor, an optical pulse sensor, and a GPS module. In order to minimize collar power consumption and prolong battery life, "
-        "computationally intensive algorithms are offloaded to a central server. The motion signals are processed using a reduced set of 12 physically "
-        "interpretable features extracted from sliding windows. An ExtraTrees classifier achieves an overall accuracy of 95.54% and a walking F1-score "
-        "of 91.80% in distinguishing standing, lying, grazing, and walking states.",
+        "The proposed system architecture is designed around a multi-sensor collar unit comprising an MPU-6050 6-axis inertial motion sensor "
+        "(accelerometer and gyroscope), a waterproof DS18B20 contact temperature sensor, a MAX30102 optical pulse sensor, and a u-blox NEO-6M GPS receiver, "
+        "coordinated by a low-power ESP32 microcontroller. In this stage of the project, primary focus is placed on the complete software pipeline, "
+        "signal processing algorithms, and machine learning models evaluated on benchmark cattle telemetry data. To minimize collar power consumption, "
+        "feature extraction and classification algorithms are offloaded to a central server. The triaxial motion signals are represented using 12 "
+        "physically non-redundant features extracted from sliding windows. An ExtraTrees classifier achieves an overall classification accuracy of 95.54% "
+        "and a walking F1-score of 91.80% in discriminating standing, lying, grazing, and walking states.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY, space_before=2, space_after=6
     )
     add_p(
-        "Physiological temperature monitoring incorporates an ambient thermal decoupling equation and a Tabular Cumulative Sum (CUSUM) control chart "
-        "to reliably detect early fevers while eliminating weather-induced false alarms. Heart rate readings are evaluated using activity-gated baseline "
-        "comparisons to identify physical stress or acute pain. Pasture geofencing is implemented using a Ray-Casting Point-in-Polygon check with a "
-        "two-strike temporal debounce filter. Furthermore, a veterinary diagnostic assistant powered by Gemini 3.8 Flash synthesizes multi-sensor vitals "
-        "into clear, practical diagnostic cards for the farmer. The complete software architecture is integrated into a modular FastAPI backend.",
+        "Physiological temperature monitoring incorporates an ambient thermal decoupling model and a Tabular Cumulative Sum (CUSUM) control chart "
+        "to detect early fever inception while suppressing weather-induced fluctuations. Heart rate telemetry is evaluated using an activity-gated baseline "
+        "comparison model. Pasture geofencing is implemented using a Ray-Casting Point-in-Polygon algorithm with a two-strike temporal debounce filter. "
+        "Furthermore, an automated veterinary synthesis assistant powered by Gemini 3.8 Flash translates multi-sensor vitals into clear, standardized "
+        "diagnostic cards for farm operators. The complete software architecture is integrated into a modular FastAPI backend, establishing a verified "
+        "algorithmic foundation for future physical collar prototyping and field deployment.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY, space_before=2, space_after=8
     )
 
@@ -380,6 +403,7 @@ def create_report():
     # =========================================================================
     p_toc = add_p("TABLE OF CONTENTS", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=14, space_before=6, space_after=12)
     p_toc.runs[0].underline = True
+    p_toc.runs[0].font.color.rgb = RGBColor(0, 0, 0)
 
     toc_entries = [
         ("Declaration", "ii"),
@@ -393,7 +417,7 @@ def create_report():
         ("    1.1 Background and Motivation", "1"),
         ("    1.2 Practical Challenges in Precision Cattle Monitoring", "2"),
         ("    1.3 Problem Statement", "3"),
-        ("    1.4 Objectives of the Project", "3"),
+        ("    1.4 Objectives and Project Scope", "3"),
         ("    1.5 Organization of the Report", "4"),
         ("Chapter 2: Literature Review", "5"),
         ("    2.1 Evolution of Wearable Systems in Dairy Farming", "5"),
@@ -402,9 +426,9 @@ def create_report():
         ("    2.4 Cumulative Sum Control Charts in Animal Healthcare", "8"),
         ("    2.5 GPS Tracking and Pasture Boundary Containment", "9"),
         ("    2.6 Identification of Research Gaps", "10"),
-        ("Chapter 3: System Architecture and Hardware Components", "11"),
+        ("Chapter 3: System Design and Proposed Hardware Architecture", "11"),
         ("    3.1 Multi-Sensor Telemetry Architecture", "11"),
-        ("    3.2 Sensor Suite Specifications", "12"),
+        ("    3.2 Proposed Sensor Suite Specifications", "12"),
         ("    3.3 Microcontroller Selection and Edge Transmission Strategy", "14"),
         ("    3.4 Power Consumption Analysis and Battery Life Estimation", "15"),
         ("Chapter 4: Methodology and Algorithmic Formulation", "16"),
@@ -427,7 +451,7 @@ def create_report():
         ("Chapter 6: Conclusion and Future Scope", "40"),
         ("    6.1 Summary of Contributions", "40"),
         ("    6.2 Key Engineering Takeaways", "41"),
-        ("    6.3 Future Work", "41"),
+        ("    6.3 Future Work and Hardware Prototyping", "41"),
         ("References", "43")
     ]
 
@@ -448,6 +472,7 @@ def create_report():
         r0 = p0.add_run(title)
         r0.font.name = "Times New Roman"
         r0.font.size = Pt(10.5)
+        r0.font.color.rgb = RGBColor(0, 0, 0)
         if title.startswith("Chapter") or title in ["Declaration", "Certificate", "Acknowledgement", "Abstract", "References"]:
             r0.bold = True
             
@@ -458,6 +483,7 @@ def create_report():
         r1 = p1.add_run(page_no)
         r1.font.name = "Times New Roman"
         r1.font.size = Pt(10.5)
+        r1.font.color.rgb = RGBColor(0, 0, 0)
         if title.startswith("Chapter") or title in ["Declaration", "Certificate", "Acknowledgement", "Abstract", "References"]:
             r1.bold = True
 
@@ -468,6 +494,7 @@ def create_report():
     # =========================================================================
     p_lof = add_p("LIST OF FIGURES", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=14, space_before=6, space_after=8)
     p_lof.runs[0].underline = True
+    p_lof.runs[0].font.color.rgb = RGBColor(0, 0, 0)
 
     figures_list = [
         ("Figure 3.1", "Multi-modal edge-to-server IoT telemetry architecture and system components", "11"),
@@ -486,12 +513,12 @@ def create_report():
 
     p_lot = add_p("LIST OF TABLES", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=14, space_before=8, space_after=8)
     p_lot.runs[0].underline = True
+    p_lot.runs[0].font.color.rgb = RGBColor(0, 0, 0)
 
     tables_list = [
-        ("Table 3.1", "Collar hardware sensor specifications and measurement characteristics", "13"),
+        ("Table 3.1", "Proposed collar hardware sensor specifications and measurement characteristics", "13"),
         ("Table 4.1", "Definitions and mathematical formulation of the 12 selected physical features", "17"),
         ("Table 4.2", "Clinical anomaly rules for 24-hour daily activity and time budget deviations", "21"),
-        ("Table 4.3", "Diagnostic triage classification logic of the LLM Vet assistant", "29"),
         ("Table 5.1", "Performance comparison of machine learning classifiers across behavioral classes", "32")
     ]
     for tab_id, cap, pg in tables_list:
@@ -533,7 +560,7 @@ def create_report():
 
     add_h2("1.2 Practical Challenges in Precision Cattle Monitoring")
     add_p(
-        "Although wearable sensor systems have been studied in literature, several practical engineering challenges remain:",
+        "Although wearable sensor systems have been investigated in academic research, several practical engineering challenges remain:",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
     add_p(
@@ -566,18 +593,24 @@ def create_report():
 
     add_h2("1.3 Problem Statement")
     add_p(
-        "The objective of this project is to develop and validate a lightweight, multi-sensor smart cow collar system that collects "
-        "inertial motion, temperature, pulse rate, and GPS location data, transmits this telemetry to a central server, classifies basic "
-        "daily behaviors accurately, tracks individual physiological baselines to detect health anomalies, and provides simple, actionable "
-        "diagnostic summaries for farm management.",
+        "The objective of this project is to develop and validate the design, algorithmic framework, and software architecture "
+        "for a multi-sensor smart cow collar system that collects inertial motion, temperature, pulse rate, and GPS location data, "
+        "transmits this telemetry to a central server, classifies basic daily behaviors accurately, tracks individual physiological "
+        "baselines to detect health anomalies, and provides simple, actionable diagnostic summaries for farm management.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
 
-    add_h2("1.4 Objectives of the Project")
-    add_p("The specific technical objectives of this project are:", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
-    add_p("1. Multi-Sensor Data Collection: Design a wearable neck collar housing an accelerometer, gyroscope, temperature sensor, pulse sensor, and GPS module to acquire and transmit telemetry data efficiently.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_h2("1.4 Objectives and Project Scope")
+    add_p(
+        "In this minor project phase, primary emphasis is placed on the computational design, signal processing methodology, "
+        "machine learning models, and central cloud backend architecture. The proposed hardware platform specifies the sensor suite "
+        "and microcontroller interfaces, while physical fabrication and on-animal collar testing are designated for the subsequent "
+        "implementation phase. The specific technical objectives of this project are:",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY
+    )
+    add_p("1. Multi-Sensor System Design: Formulate a proposed collar architecture incorporating an MPU-6050 accelerometer/gyroscope, a DS18B20 contact temperature sensor, a MAX30102 pulse sensor, and a NEO-6M GPS receiver with an ESP32 microcontroller.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
     add_p("2. Inertial Feature Reduction: Analyze triaxial motion signals and reduce high-dimensional feature spaces to 12 non-redundant physical features that distinguish standing, lying, grazing, and walking states.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
-    add_p("3. Machine Learning Classification: Train and evaluate supervised classifiers to achieve greater than 95% overall accuracy and reliable performance on walking and grazing behaviors.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("3. Machine Learning Classification: Train and evaluate supervised classifiers on benchmark cattle datasets to achieve greater than 95% overall accuracy and reliable performance on walking and grazing behaviors.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
     add_p("4. Daily Time Budget and Anomaly Detection: Build an automated rule engine that tracks 24-hour daily activity totals against rolling personal baselines to detect feeding deficits, estrus, and lameness.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
     add_p("5. Ambient Decoupled Temperature Tracking: Implement an ambient temperature compensation model combined with a Tabular Cumulative Sum (CUSUM) control chart to detect early mastitis fevers and milk fever hypothermia.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
     add_p("6. Activity-Gated Pulse Telemetry: Develop a heart rate monitoring service that compares pulse readings against personal resting baselines only when the animal is inactive.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
@@ -587,10 +620,10 @@ def create_report():
     add_h2("1.5 Organization of the Report")
     add_p(
         "This report is organized into six chapters. Chapter 2 reviews relevant literature on precision livestock farming, wearable sensors, "
-        "and behavioral classification. Chapter 3 describes the system architecture and hardware components. Chapter 4 provides the mathematical "
-        "and methodological formulation of the feature extraction, classification models, CUSUM temperature filter, geofencing logic, and "
-        "FastAPI backend. Chapter 5 presents experimental results, performance comparisons, and validation tests. Chapter 6 concludes the report "
-        "and outlines directions for future work.",
+        "and behavioral classification. Chapter 3 describes the system design, proposed hardware specifications, and sensor interfaces. "
+        "Chapter 4 provides the mathematical and methodological formulation of the feature extraction, classification models, CUSUM temperature filter, "
+        "geofencing logic, and FastAPI backend. Chapter 5 presents experimental results, performance comparisons, and validation tests. Chapter 6 concludes "
+        "the report and outlines directions for future work and hardware prototyping.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
 
@@ -637,7 +670,7 @@ def create_report():
     add_p(
         "In statistical quality control, Cumulative Sum (CUSUM) charts, originally developed by Page (1954), are widely recognized for their ability "
         "to detect small, persistent shifts in a process mean much faster than standard Shewhart control charts. In veterinary health monitoring, "
-        "an developing infection like subclinical mastitis often produces a gradual temperature rise of 0.5 C to 1.0 C over several hours. Standard "
+        "a developing infection like subclinical mastitis often produces a gradual temperature rise of 0.5 C to 1.0 C over several hours. Standard "
         "thresholds miss these early rises until severe fever occurs. A Tabular CUSUM scheme accumulates positive temperature residuals over time, "
         "providing early warning of fever while remaining insensitive to isolated momentary temperature spikes.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
@@ -674,13 +707,13 @@ def create_report():
     doc.add_page_break()
 
     # =========================================================================
-    # CHAPTER 3: SYSTEM ARCHITECTURE & HARDWARE COMPONENTS
+    # CHAPTER 3: SYSTEM DESIGN & PROPOSED HARDWARE ARCHITECTURE
     # =========================================================================
-    add_chapter_header("Chapter 3", "System Architecture & Hardware Components")
+    add_chapter_header("Chapter 3", "System Design & Proposed Hardware Architecture")
 
     add_h2("3.1 Multi-Sensor Telemetry Architecture")
     add_p(
-        "The overall system employs a split edge-to-server telemetry architecture. The wearable collar unit collects sensor measurements "
+        "The system design employs a split edge-to-server telemetry architecture. The proposed collar unit collects raw sensor measurements "
         "from its hardware suite and transmits them wirelessly to a central base station server. The server performs signal pre-processing, "
         "feature extraction, behavioral classification, baseline tracking, and veterinary alert generation.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
@@ -689,59 +722,62 @@ def create_report():
     add_figure("cow-behavior-classification-acc-gyro-combined/images/project_framework.png",
                "Figure 3.1: Multi-modal edge-to-server IoT telemetry architecture and system components.")
 
-    add_h2("3.2 Sensor Suite Specifications")
+    add_h2("3.2 Proposed Sensor Suite Specifications")
     add_p(
-        "The collar hardware incorporates four primary sensing modules chosen for their reliability, low power consumption, and compact physical dimensions:",
+        "The proposed collar hardware design specifies four primary sensing modules chosen for their reliability, low power consumption, and compact physical dimensions:",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
     add_p(
-        "1. MPU-6050 Motion Sensor: Contains a 3-axis MEMS accelerometer and a 3-axis MEMS gyroscope integrated on a single silicon chip with an "
-        "on-board 16-bit analog-to-digital converter (ADC). The accelerometer measures gravitational tilt (distinguishing upright standing from recumbent lying), "
-        "while the gyroscope captures dynamic rotational velocities associated with chewing and walking.",
+        "1. Motion Tracking (InvenSense MPU-6050): An integrated 6-axis MEMS inertial measurement unit comprising a 3-axis accelerometer and a 3-axis gyroscope "
+        "with an internal 16-bit analog-to-digital converter (ADC), communicating via standard I2C bus. The accelerometer measures gravitational tilt "
+        "(distinguishing upright standing from recumbent lying), while the gyroscope captures dynamic rotational head velocities associated with chewing, grazing, and walking.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
     add_p(
-        "2. Temperature Sensor: Measures skin surface temperature at the animal's neck. A secondary sensor records ambient air temperature so that "
-        "environmental heating or cooling can be subtracted mathematically from the reading.",
+        "2. Body & Ambient Temperature (Dallas DS18B20 & DHT22 / LM35): A waterproof Dallas DS18B20 digital temperature probe is placed in direct contact "
+        "with the cow's neck skin, communicating over a 1-Wire digital bus with 12-bit precision (0.0625 C resolution). A secondary sensor (DHT22 or LM35) "
+        "records ambient air temperature so that environmental thermal bias can be subtracted mathematically.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
     add_p(
-        "3. Optical Pulse Sensor: Uses photoplethysmography (PPG) to measure heart rate in beats per minute (BPM). To avoid motion noise, pulse readings "
-        "are evaluated primarily during resting states.",
+        "3. Pulse & Heart Rate (Maxim Integrated MAX30102): A high-sensitivity optical pulse oximeter and heart-rate sensor module using red and infrared "
+        "photoplethysmography (PPG) with an I2C interface. To avoid motion noise, pulse readings are evaluated primarily during resting states.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
     add_p(
-        "4. NEO-6M GPS Receiver: Provides latitude, longitude, speed, and timestamp data using satellite navigation signals.",
+        "4. Geographic Positioning (u-blox NEO-6M GPS): A high-sensitivity satellite navigation receiver with an active ceramic patch antenna, communicating "
+        "via UART serial interface at 9600 baud, providing latitude, longitude, altitude, ground speed, and UTC timestamp data.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
 
-    # Hardware Specifications Table
-    table_hw = doc.add_table(rows=5, cols=4)
+    # Hardware Specifications Table (Strictly Black & White Academic Style)
+    table_hw = doc.add_table(rows=6, cols=4)
     table_hw.alignment = WD_TABLE_ALIGNMENT.CENTER
     table_hw.autofit = False
 
-    hw_headers = ["Sensor Module", "Component", "Measured Parameters", "Sampling Rate"]
+    hw_headers = ["Parameter Tracked", "Proposed Hardware Sensor", "Measurement Capabilities", "Interface & Rate"]
     for i, h in enumerate(hw_headers):
         cell = table_hw.cell(0, i)
-        set_cell_background(cell, "1B365D")
+        set_cell_background(cell, "000000")  # Black Header
         set_cell_margins(cell, top=60, bottom=60, left=80, right=80)
         p = cell.paragraphs[0]
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         r = p.add_run(h)
         r.bold = True
         r.font.name = "Times New Roman"
-        r.font.size = Pt(10)
+        r.font.size = Pt(9.5)
         r.font.color.rgb = RGBColor(255, 255, 255)
 
     hw_rows = [
-        ("Motion Sensor", "MPU-6050 (MEMS)", "Triaxial Accel (g), Triaxial Gyro (deg/s)", "10 Hz"),
-        ("Temperature", "Contact Probe / Thermistor", "Skin & Ambient Air Temperature (deg C)", "1 reading / 10 min"),
-        ("Heart Rate", "Optical PPG Pulse Sensor", "Heart Rate (BPM)", "1 reading / 10 min"),
-        ("GPS Module", "u-blox NEO-6M", "Latitude, Longitude, Ground Speed (m/s)", "1 reading / 15 min")
+        ("Activity & Posture", "InvenSense MPU-6050 (6-Axis MEMS)", "Triaxial Accel (g), Triaxial Gyro (deg/s)", "I2C Bus | 10 Hz"),
+        ("Skin Temperature", "Dallas DS18B20 (Waterproof Probe)", "Body Surface Temperature (deg C)", "1-Wire Bus | 1 reading / 10 min"),
+        ("Ambient Temperature", "DHT22 / LM35 Sensor", "Ambient Air Temperature (deg C)", "Digital / ADC | 1 reading / 10 min"),
+        ("Heart Rate / Pulse", "Maxim MAX30102 (Optical PPG)", "Heart Rate (BPM) & Blood Pulsation", "I2C Bus | 1 reading / 10 min"),
+        ("Position & Boundary", "u-blox NEO-6M GNSS/GPS", "Latitude, Longitude, Speed (m/s), UTC", "UART Serial | 1 reading / 15 min")
     ]
     for row_idx, r_data in enumerate(hw_rows):
         row = table_hw.rows[row_idx + 1]
-        bg = "F4F6F9" if row_idx % 2 == 1 else "FFFFFF"
+        bg = "FFFFFF"
         for col_idx, text in enumerate(r_data):
             cell = row.cells[col_idx]
             set_cell_background(cell, bg)
@@ -751,20 +787,23 @@ def create_report():
             r = p.add_run(text)
             r.font.name = "Times New Roman"
             r.font.size = Pt(9.5)
+            r.font.color.rgb = RGBColor(0, 0, 0)
 
-    add_p("Table 3.1: Collar hardware sensor specifications and measurement characteristics.", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10, space_before=4, space_after=8)
+    add_p("Table 3.1: Proposed collar hardware sensor specifications and measurement characteristics.", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10, space_before=4, space_after=8)
 
     add_h2("3.3 Microcontroller Selection and Edge Transmission Strategy")
     add_p(
-        "A low-power microcontroller (such as the ESP32 or ATmega328P) manages the sensor interfaces via standard I2C and UART buses. "
-        "To maximize battery endurance, the firmware operates in a sleep-and-wake cycle. The motion sensor collects raw readings in a local buffer, "
-        "and the microcontroller transmits the packaged telemetry packet to the server before entering deep sleep mode.",
+        "The proposed microcontroller unit is the Espressif ESP32-WROOM-32, chosen for its dual-core 32-bit Xtensa processor (240 MHz), "
+        "integrated Wi-Fi (802.11 b/g/n) and Bluetooth (BLE 4.2), wide range of hardware peripherals (I2C, SPI, UART, ADC), and ultra-low-power "
+        "deep sleep modes (consuming less than 15 microamperes). In the proposed firmware operational flow, the microcontroller operates in a "
+        "sleep-and-wake duty cycle, buffering sampled sensor readings in local memory and transmitting the telemetry payload to the server before "
+        "re-entering low-power sleep mode.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
 
     add_h2("3.4 Power Consumption Analysis and Battery Life Estimation")
     add_p(
-        "A standard 3.7V 2500 mAh rechargeable lithium-ion battery powers the collar. In active transmission mode, the current draw is approximately 80 mA "
+        "A standard 3.7V 2500 mAh rechargeable lithium-ion battery is planned for the collar enclosure. In active transmission mode, the current draw is approximately 80 mA "
         "for 2 seconds. In deep sleep mode, current draw drops to under 0.15 mA. With a transmission interval of 60 seconds, the average current consumption "
         "is approximately 2.8 mA, providing an estimated operating lifespan of over 35 days on a single charge.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
@@ -773,7 +812,7 @@ def create_report():
     doc.add_page_break()
 
     # =========================================================================
-    # CHAPTER 4: METHODOLOGY & ALGORITHMIC ENGINES
+    # CHAPTER 4: METHODOLOGY & ALGORITHMIC FORMULATION
     # =========================================================================
     add_chapter_header("Chapter 4", "Methodology & Algorithmic Formulation")
 
@@ -786,7 +825,7 @@ def create_report():
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
 
-    # 12 Features Table
+    # 12 Features Table (Strictly Black & White)
     feat_table = doc.add_table(rows=13, cols=3)
     feat_table.alignment = WD_TABLE_ALIGNMENT.CENTER
     feat_table.autofit = False
@@ -794,7 +833,7 @@ def create_report():
     headers = ["No.", "Feature Name", "Physical Significance in Cow Biomechanics"]
     for i, h in enumerate(headers):
         cell = feat_table.cell(0, i)
-        set_cell_background(cell, "1B365D")
+        set_cell_background(cell, "000000")  # Black Header
         set_cell_margins(cell, top=60, bottom=60, left=80, right=80)
         p = cell.paragraphs[0]
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -824,7 +863,7 @@ def create_report():
     ]
     for row_idx, r_data in enumerate(features_data):
         row = feat_table.rows[row_idx + 1]
-        bg = "F4F6F9" if row_idx % 2 == 1 else "FFFFFF"
+        bg = "FFFFFF"
         for col_idx, text in enumerate(r_data):
             cell = row.cells[col_idx]
             set_cell_background(cell, bg)
@@ -834,6 +873,7 @@ def create_report():
             r = p.add_run(text)
             r.font.name = "Times New Roman"
             r.font.size = Pt(9.5)
+            r.font.color.rgb = RGBColor(0, 0, 0)
 
     add_p("Table 4.1: Definitions and mathematical formulation of the 12 selected physical features.", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10, space_before=4, space_after=8)
 
@@ -956,7 +996,7 @@ def create_report():
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
 
-    # Model Benchmark Table
+    # Model Benchmark Table (Strictly Black & White)
     res_table = doc.add_table(rows=5, cols=6)
     res_table.alignment = WD_TABLE_ALIGNMENT.CENTER
     res_table.autofit = False
@@ -964,7 +1004,7 @@ def create_report():
     res_headers = ["Classifier Architecture", "CV Accuracy", "Precision", "Recall", "Overall F1", "Walking F1"]
     for i, h in enumerate(res_headers):
         cell = res_table.cell(0, i)
-        set_cell_background(cell, "1B365D")
+        set_cell_background(cell, "000000")  # Black Header
         set_cell_margins(cell, top=60, bottom=60, left=60, right=60)
         p = cell.paragraphs[0]
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -982,7 +1022,7 @@ def create_report():
     ]
     for row_idx, r_data in enumerate(res_data):
         row = res_table.rows[row_idx + 1]
-        bg = "F4F6F9" if row_idx % 2 == 1 else "FFFFFF"
+        bg = "FFFFFF"
         for col_idx, text in enumerate(r_data):
             cell = row.cells[col_idx]
             set_cell_background(cell, bg)
@@ -992,6 +1032,7 @@ def create_report():
             r = p.add_run(text)
             r.font.name = "Times New Roman"
             r.font.size = Pt(9.5)
+            r.font.color.rgb = RGBColor(0, 0, 0)
             if "Champion" in text:
                 r.bold = True
 
@@ -1058,11 +1099,11 @@ def create_report():
 
     add_h2("6.1 Summary of Contributions")
     add_p(
-        "In this minor project, an automated smart cow collar system called AICowCollar was designed, implemented, and validated. "
-        "The key engineering contributions of this work are:",
+        "In this minor project, the system design, signal processing methodology, and machine learning models for an automated smart cow collar "
+        "platform were formulated, implemented, and validated. The key engineering contributions of this work are:",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
-    add_p("1. Multi-Sensor Collar Design: Successfully integrated motion, temperature, pulse, and GPS sensors into a unified telemetry unit.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("1. Multi-Sensor Architecture Design: Developed the system specification for integrating MPU-6050 motion, DS18B20 temperature, MAX30102 pulse, and NEO-6M GPS sensors into a unified telemetry scheme with an ESP32 microcontroller.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
     add_p("2. Biomechanical Feature Selection: Reduced feature dimensionality from over 117 variables to 12 physical indicators, eliminating collinearity while achieving 95.54% classification accuracy.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
     add_p("3. CUSUM Thermal Anomaly Detection: Developed an ambient-decoupled thermal pipeline that detects subclinical fevers without false alarms.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
     add_p("4. Robust Geofencing: Implemented Ray-Casting Point-in-Polygon geofencing with a two-strike debounce filter to eliminate GPS drift false alarms.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
@@ -1072,20 +1113,22 @@ def create_report():
     add_h2("6.2 Key Engineering Takeaways")
     add_p(
         "The project demonstrated that edge-to-server task partitioning is an effective strategy for wearable livestock telemetry. "
-        "By restricting collar hardware to data collection and wireless transmission, battery life is substantially extended. Furthermore, "
+        "By restricting the proposed collar hardware to data collection and wireless transmission, battery life is substantially extended. Furthermore, "
         "combining physiological vitals with behavioral time budgets yields far more reliable health warnings than monitoring motion alone.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
 
-    add_h2("6.3 Future Work")
+    add_h2("6.3 Future Work and Hardware Prototyping")
     add_p(
-        "The current prototype can be extended in several promising directions:",
+        "Having established the software models, algorithmic pipelines, and cloud database backend in this minor project, the next phase "
+        "will focus on hardware fabrication, physical packaging, and field experimentation:",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
-    add_p("1. LoRaWAN Long-Range Mesh Networking: Replace short-range wireless links with LoRaWAN transceivers to enable multi-kilometer telemetry across large grazing ranches without cellular subscriptions.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
-    add_p("2. Solar Energy Harvesting: Incorporate a flexible solar panel on the upper strap of the collar to continuously recharge the battery, achieving indefinite operational lifespan.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
-    add_p("3. Mobile Dashboard Application: Develop an Android/iOS mobile application providing farm attendants with real-time push notifications and visual pasture map overlays.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
-    add_p("4. Edge TinyML Quantization: Deploy an 8-bit quantized micro-classifier on the collar for basic motion pre-filtering during communication outages.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("1. Physical PCB Fabrication and Collar Packaging: Design an integrated custom printed circuit board (PCB) with an IP67 waterproof enclosure to house the ESP32, MPU-6050, DS18B20, MAX30102, and NEO-6M modules on a heavy-duty nylon collar strap.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("2. On-Animal Live Telemetry Trials: Deploy the physical prototype on dairy cattle to record real-world on-animal sensor signals and validate battery endurance under live pasture conditions.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("3. LoRaWAN Long-Range Transceivers: Integrate SX1276/SX1262 LoRa modules to support multi-kilometer telemetry transmission across large rural farms without relying on local Wi-Fi or cellular networks.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("4. Solar Energy Harvesting: Incorporate a flexible solar panel on the upper strap of the collar to continuously recharge the battery, achieving indefinite operational lifespan.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("5. Edge TinyML Deployment: Deploy an 8-bit quantized micro-classifier on the ESP32 for basic motion pre-filtering during communication outages.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
 
     doc.add_page_break()
 
@@ -1094,6 +1137,7 @@ def create_report():
     # =========================================================================
     p_ref = add_p("REFERENCES", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=14, space_before=6, space_after=12)
     p_ref.runs[0].underline = True
+    p_ref.runs[0].font.color.rgb = RGBColor(0, 0, 0)
 
     references = [
         "Alsaaidi, M. A., Al-Nuaimy, W., & Jaber, M. A. (2024). Precision livestock farming: A comprehensive review of smart sensing technologies and animal welfare monitoring. Computers and Electronics in Agriculture, 218, 108695.",
@@ -1120,20 +1164,13 @@ def create_report():
         r = p_ref.add_run(f"[{i+1}] {ref}")
         r.font.name = "Times New Roman"
         r.font.size = Pt(10)
+        r.font.color.rgb = RGBColor(0, 0, 0)
 
-    # Save documents with fallback if file is open in MS Word
-    try:
-        doc.save("Minor_Project_Report_Final.docx")
-        print("Successfully saved Minor_Project_Report_Final.docx")
-    except PermissionError:
-        doc.save("Minor_Project_Report_Final_Updated.docx")
-        print("Note: Minor_Project_Report_Final.docx is currently open in Word. Saved to Minor_Project_Report_Final_Updated.docx")
-
-    try:
-        doc.save("Minor Project Report.docx")
-        print("Successfully saved Minor Project Report.docx")
-    except PermissionError:
-        print("Note: Minor Project Report.docx is currently open in Word.")
+    # Save to both target locations
+    doc.save("Minor_Project_Report_Final.docx")
+    doc.save("Minor Project Report.docx")
+    doc.save("Minor_Project_Report_Final_Updated.docx")
+    print("Successfully generated all reports with official title, strictly black typography, and proposed hardware specifications.")
 
 if __name__ == "__main__":
     create_report()
