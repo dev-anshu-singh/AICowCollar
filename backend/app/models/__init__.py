@@ -5,6 +5,7 @@ from .alert import ActivityAlert
 from .temperature import TemperatureRecord, TemperatureBaseline
 from .temperature_alert import TemperatureAlert
 from .heart_rate import HeartRateRecord, HeartRateAlert
+from .gps import GPSRecord, GPSAlert
 
 __all__ = [
     "Cow",
@@ -16,4 +17,6 @@ __all__ = [
     "TemperatureAlert",
     "HeartRateRecord",
     "HeartRateAlert",
+    "GPSRecord",
+    "GPSAlert",
 ]

@@ -17,6 +17,13 @@ from .heart_rate import (
     HeartRateBaselineResponse,
     HeartRateAlertResponse,
 )
+from .gps import (
+    GPSFix,
+    GPSTelemetryPayload,
+    GPSRecordResponse,
+    GPSAlertResponse,
+    FarmPolygonResponse,
+)
 
 __all__ = [
     "CowBase",
@@ -39,4 +46,9 @@ __all__ = [
     "HeartRateRecordResponse",
     "HeartRateBaselineResponse",
     "HeartRateAlertResponse",
+    "GPSFix",
+    "GPSTelemetryPayload",
+    "GPSRecordResponse",
+    "GPSAlertResponse",
+    "FarmPolygonResponse",
 ]

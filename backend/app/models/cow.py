@@ -25,3 +25,5 @@ class Cow(Base):
     temperature_alerts = relationship("TemperatureAlert", back_populates="cow", cascade="all, delete-orphan")
     heart_rate_records = relationship("HeartRateRecord", back_populates="cow", cascade="all, delete-orphan")
     heart_rate_alerts = relationship("HeartRateAlert", back_populates="cow", cascade="all, delete-orphan")
+    gps_records = relationship("GPSRecord", back_populates="cow", cascade="all, delete-orphan")
+    gps_alerts = relationship("GPSAlert", back_populates="cow", cascade="all, delete-orphan")
