@@ -1,0 +1,7 @@
+Model Configuration,Accuracy (%),Macro F1 (%),Weighted F1 (%),Macro Precision (%),Macro Recall (%),MCC,Lying F1 (%),Standing F1 (%),Eating F1 (%),Walking F1 (%)
+1. Pongsanun Full (RF - 117 Feat),95.0,89.37,95.03,89.45,89.57,0.9048,98.16,90.84,87.79,80.7
+2. Pongsanun Top 15 (RF - 15 Feat),95.48,91.43,95.52,90.5,92.41,0.9141,98.37,91.86,86.96,88.52
+3. Streamlined RF (12 Feat),95.0,90.9,95.06,88.8,93.46,0.9055,98.37,90.39,85.93,88.89
+4. Streamlined Extra Trees (12 Feat),95.54,91.01,95.61,90.2,92.32,0.9157,98.81,91.68,85.4,88.14
+5. Streamlined HistGradBoost (12 Feat),97.19,94.35,97.2,93.56,95.19,0.9463,99.08,94.81,91.7,91.8
+6. Streamlined MLP (12 Feat),91.64,75.12,91.4,79.92,73.7,0.8388,97.59,84.82,77.15,40.91
