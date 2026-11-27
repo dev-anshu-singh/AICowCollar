@@ -1,0 +1,18 @@
+{
+  "model_name": "GMM_GPS_Behavior_And_Geofence",
+  "window_fixes": 6,
+  "features": [
+    "speed_mean",
+    "speed_std",
+    "turn_std",
+    "straightness",
+    "ttf_sec"
+  ],
+  "classes": [
+    "Resting",
+    "Grazing",
+    "Walking"
+  ],
+  "geofence_debounce_strikes": 2,
+  "max_speed_filter_mps": 2.5
+}
