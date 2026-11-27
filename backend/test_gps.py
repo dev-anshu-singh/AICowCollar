@@ -1,3 +1,8 @@
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from app.services.gps_service import evaluate_gps_window, DEFAULT_FARM_POLYGON
 
 sample_fixes = [
