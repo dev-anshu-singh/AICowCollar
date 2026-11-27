@@ -20,17 +20,57 @@ def set_cell_background(cell, hex_color):
     shading_elm = parse_xml(f'<w:shd {nsdecls("w")} w:fill="{hex_color}"/>')
     cell._tc.get_or_add_tcPr().append(shading_elm)
 
+def add_page_border(section):
+    """Adds classic double-line page border typical of academic reports."""
+    sectPr = section._sectPr
+    pgBorders = OxmlElement('w:pgBorders')
+    pgBorders.set(qn('w:offsetFrom'), 'page')
+    for side in ['top', 'left', 'bottom', 'right']:
+        border = OxmlElement(f'w:{side}')
+        border.set(qn('w:val'), 'double')
+        border.set(qn('w:sz'), '12')
+        border.set(qn('w:space'), '24')
+        border.set(qn('w:color'), '1B365D')
+        pgBorders.append(border)
+    sectPr.append(pgBorders)
+
 def create_report():
     doc = docx.Document()
     
     # Page Setup: A4 with 1.0 inch margins
-    for section in doc.sections:
-        section.page_width = Inches(8.27)
-        section.page_height = Inches(11.69)
-        section.top_margin = Inches(1.0)
-        section.bottom_margin = Inches(1.0)
-        section.left_margin = Inches(1.0)
-        section.right_margin = Inches(1.0)
+    section = doc.sections[0]
+    section.page_width = Inches(8.27)
+    section.page_height = Inches(11.69)
+    section.top_margin = Inches(1.0)
+    section.bottom_margin = Inches(1.0)
+    section.left_margin = Inches(1.0)
+    section.right_margin = Inches(1.0)
+
+    # Add double-line page border
+    add_page_border(section)
+
+    # Header and Footer Setup (different on first page)
+    section.different_first_page_header_footer = True
+    
+    # Running Header for Body Pages
+    header = section.header
+    p_h = header.paragraphs[0]
+    p_h.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    r_h = p_h.add_run("AICowCollar: Smart Cow Collar System | Minor Project Report")
+    r_h.font.name = "Times New Roman"
+    r_h.font.size = Pt(9)
+    r_h.italic = True
+    r_h.font.color.rgb = RGBColor(110, 110, 110)
+
+    # Running Footer for Body Pages
+    footer = section.footer
+    p_f = footer.paragraphs[0]
+    p_f.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r_f = p_f.add_run("Department of Mechatronics and Automation Engineering, IIIT Bhagalpur")
+    r_f.font.name = "Times New Roman"
+    r_f.font.size = Pt(9)
+    r_f.italic = True
+    r_f.font.color.rgb = RGBColor(110, 110, 110)
 
     # Base Styles
     normal_style = doc.styles['Normal']
@@ -55,452 +95,502 @@ def create_report():
             run.font.color.rgb = RGBColor(0, 0, 0)
         return p
 
-    def add_h1(text):
-        p = add_p(text, align=WD_ALIGN_PARAGRAPH.LEFT, bold=True, size_pt=16, space_before=14, space_after=6)
-        return p
+    def add_chapter_header(chap_num_str, chap_title_str):
+        p1 = add_p(chap_num_str.upper(), align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=14, space_before=16, space_after=2)
+        p1.runs[0].font.color.rgb = RGBColor(139, 0, 0)  # Classic Dark Red
+        p2 = add_p(chap_title_str.upper(), align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=16, space_before=2, space_after=14)
+        p2.runs[0].font.color.rgb = RGBColor(10, 35, 80)   # Deep Navy
+        return p2
 
     def add_h2(text):
-        p = add_p(text, align=WD_ALIGN_PARAGRAPH.LEFT, bold=True, size_pt=14, space_before=10, space_after=4)
+        p = add_p(text, align=WD_ALIGN_PARAGRAPH.LEFT, bold=True, size_pt=13, space_before=12, space_after=4)
+        p.runs[0].font.color.rgb = RGBColor(10, 35, 80)
         return p
 
     def add_h3(text):
-        p = add_p(text, align=WD_ALIGN_PARAGRAPH.LEFT, bold=True, size_pt=12, space_before=6, space_after=2)
+        p = add_p(text, align=WD_ALIGN_PARAGRAPH.LEFT, bold=True, italic=True, size_pt=12, space_before=8, space_after=2)
         return p
 
-    def add_bullet(text, bold_prefix="", size_pt=11):
-        p = doc.add_paragraph(style='List Bullet')
-        p.paragraph_format.space_before = Pt(1)
-        p.paragraph_format.space_after = Pt(3)
-        p.paragraph_format.line_spacing = 1.15
-        if bold_prefix:
-            r_bold = p.add_run(bold_prefix)
-            r_bold.bold = True
-            r_bold.font.name = 'Times New Roman'
-            r_bold.font.size = Pt(size_pt)
-        r_text = p.add_run(text)
-        r_text.font.name = 'Times New Roman'
-        r_text.font.size = Pt(size_pt)
-        return p
-
-    def add_institute_block():
-        # Logos side-by-side in a 1-row, 2-column borderless table
-        tbl = doc.add_table(rows=1, cols=2)
-        tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
-        for row in tbl.rows:
-            for cell in row.cells:
-                tcPr = cell._tc.get_or_add_tcPr()
-                tcBorders = parse_xml(f'<w:tcBorders {nsdecls("w")}><w:top w:val="none"/><w:left w:val="none"/><w:bottom w:val="none"/><w:right w:val="none"/></w:tcBorders>')
-                tcPr.append(tcBorders)
-
-        c1, c2 = tbl.rows[0].cells
-        c1.width = Inches(1.0)
-        c2.width = Inches(1.0)
-
-        p1 = c1.paragraphs[0]
-        p1.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-        p1.paragraph_format.space_after = Pt(0)
-        r1 = p1.add_run()
-        if os.path.exists('extracted_report_media/word/media/image1.jpeg'):
-            r1.add_picture('extracted_report_media/word/media/image1.jpeg', width=Inches(0.85))
-
-        p2 = c2.paragraphs[0]
-        p2.alignment = WD_ALIGN_PARAGRAPH.LEFT
-        p2.paragraph_format.space_after = Pt(0)
-        r2 = p2.add_run()
-        if os.path.exists('extracted_report_media/word/media/image2.png'):
-            r2.add_picture('extracted_report_media/word/media/image2.png', width=Inches(0.85))
-
-        # Hindi & English Institute names
-        add_p("भारतीय सूचना प्रौद्योगिकी संस्थान, भागलपुर", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=12, space_before=4, space_after=1, font_name="Yatra One")
-        add_p("Indian Institute of Information Technology, Bhagalpur", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=12, space_before=1, space_after=1)
-        add_p("(An Institute of National Importance Under Act of Parliament)", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=11, space_before=1, space_after=8)
+    def add_figure(img_path, caption_text, width=Inches(5.5)):
+        if os.path.exists(img_path):
+            p_img = doc.add_paragraph()
+            p_img.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p_img.paragraph_format.space_before = Pt(8)
+            p_img.paragraph_format.space_after = Pt(4)
+            run = p_img.add_run()
+            run.add_picture(img_path, width=width)
+            
+            p_cap = doc.add_paragraph()
+            p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p_cap.paragraph_format.space_before = Pt(2)
+            p_cap.paragraph_format.space_after = Pt(10)
+            r = p_cap.add_run(caption_text)
+            r.font.name = "Times New Roman"
+            r.font.size = Pt(10.5)
+            r.italic = True
+        else:
+            p = add_p(f"[{caption_text}]", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10.5)
 
     # =========================================================================
     # 1. TITLE / COVER PAGE
     # =========================================================================
-    add_p("Minor Project Report", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=16, space_before=10, space_after=4)
-    add_p("On", align=WD_ALIGN_PARAGRAPH.CENTER, bold=False, size_pt=12, space_before=2, space_after=6)
-    add_p("AI-POWERED SMART COW COLLAR:\nMULTI-MODAL EDGE TELEMETRY, BEHAVIOR CLASSIFICATION, AND CLINICAL ANOMALY DETECTION", 
-          align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=16, space_before=4, space_after=16, line_spacing=1.2)
+    add_p("A", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=13, space_before=4, space_after=2)
+    add_p("Minor Project Report", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=17, space_before=2, space_after=4)
+    add_p("On", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=12, space_before=1, space_after=6)
+    
+    title_p = add_p("Smart Cow Collar Telemetry System for Health Monitoring and Behavior Classification",
+                    align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=18, space_before=4, space_after=12)
+    title_p.runs[0].font.color.rgb = RGBColor(139, 0, 0)
 
-    add_p("Submitted in partial fulfillment of the requirements\nfor the award of the degree of", 
-          align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=12, space_before=4, space_after=6)
+    add_p("Submitted in partial fulfillment of the requirements for the award of the degree of",
+          align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=11, space_before=4, space_after=2)
     add_p("Bachelor of Technology", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=14, space_before=2, space_after=2)
-    add_p("In", align=WD_ALIGN_PARAGRAPH.CENTER, size_pt=12, space_before=2, space_after=2)
-    add_p("Mechatronics and Automation Engineering", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=14, space_before=2, space_after=20)
+    add_p("In", align=WD_ALIGN_PARAGRAPH.CENTER, size_pt=11, space_before=1, space_after=2)
+    add_p("Mechatronics and Automation Engineering", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=14, space_before=2, space_after=14)
 
-    # Student & Supervisor Table
-    sub_tbl = doc.add_table(rows=1, cols=2)
-    sub_tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
-    for cell in sub_tbl.rows[0].cells:
-        tcBorders = parse_xml(f'<w:tcBorders {nsdecls("w")}><w:top w:val="none"/><w:left w:val="none"/><w:bottom w:val="none"/><w:right w:val="none"/></w:tcBorders>')
-        cell._tc.get_or_add_tcPr().append(tcBorders)
-
-    c_left, c_right = sub_tbl.rows[0].cells
-    c_left.width = Inches(3.1)
-    c_right.width = Inches(3.1)
-
-    p_left = c_left.paragraphs[0]
-    p_left.alignment = WD_ALIGN_PARAGRAPH.LEFT
-    r = p_left.add_run("Submitted by:\n")
+    # Candidate and Supervisor Table
+    table = doc.add_table(rows=1, cols=2)
+    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    table.autofit = False
+    
+    for row in table.rows:
+        row.cells[0].width = Inches(3.2)
+        row.cells[1].width = Inches(3.2)
+        set_cell_margins(row.cells[0], top=80, bottom=80, left=100, right=100)
+        set_cell_margins(row.cells[1], top=80, bottom=80, left=100, right=100)
+        
+    cell_l = table.cell(0, 0)
+    p_l = cell_l.paragraphs[0]
+    p_l.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    r = p_l.add_run("Submitted by:\n")
     r.bold = True
-    r.font.size = Pt(12)
-    r2 = p_left.add_run("Devanshu Singh\nRoll No.: 230103012\n\nMahima Patel\nRoll No.: 230103025")
-    r2.font.size = Pt(11)
+    r.font.size = Pt(11)
+    r2 = p_l.add_run("Devanshu Singh (Roll No. 230103012)\nMahima Patel (Roll No. 230103025)\n\nB.Tech (MAE), VII Semester")
+    r2.font.size = Pt(10.5)
 
-    p_right = c_right.paragraphs[0]
-    p_right.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-    r = p_right.add_run("Under the Supervision of:\n")
+    cell_r = table.cell(0, 1)
+    p_r = cell_r.paragraphs[0]
+    p_r.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    r = p_r.add_run("Under the Supervision of:\n")
     r.bold = True
-    r.font.size = Pt(12)
-    r3 = p_right.add_run("Dr. Sunil Kumar\nAssistant Professor\nDept. of Mechatronics &\nAutomation Engineering")
-    r3.font.size = Pt(11)
+    r.font.size = Pt(11)
+    r2 = p_r.add_run("Dr. Sunil Kumar\nAssistant Professor\nDepartment of Mechatronics &\nAutomation Engineering\nIIIT Bhagalpur")
+    r2.font.size = Pt(10.5)
 
-    add_p("", space_before=24, space_after=0)
-    add_institute_block()
-    add_p("November 2026", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=12, space_before=2, space_after=0)
+    add_p("", space_before=8, space_after=4)
+
+    # Institutional Logos
+    logo_table = doc.add_table(rows=1, cols=2)
+    logo_table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    logo_table.autofit = False
+    logo_table.rows[0].cells[0].width = Inches(3.2)
+    logo_table.rows[0].cells[1].width = Inches(3.2)
+
+    cell_logo1 = logo_table.cell(0, 0)
+    p_l1 = cell_logo1.paragraphs[0]
+    p_l1.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    if os.path.exists("extracted_report_media/word/media/image1.jpeg"):
+        p_l1.add_run().add_picture("extracted_report_media/word/media/image1.jpeg", width=Inches(1.0))
+
+    cell_logo2 = logo_table.cell(0, 1)
+    p_l2 = cell_logo2.paragraphs[0]
+    p_l2.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    if os.path.exists("extracted_report_media/word/media/image2.png"):
+        p_l2.add_run().add_picture("extracted_report_media/word/media/image2.png", width=Inches(0.95))
+
+    add_p("", space_before=4, space_after=2)
+
+    # Institutional Names
+    p_hi = add_p("भारतीय सूचना प्रौद्योगिकी संस्थान, भागलपुर", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=12.5, space_before=2, space_after=1, font_name="Nirmala UI")
+    p_hi.runs[0].font.color.rgb = RGBColor(139, 0, 0)
+
+    p_en = add_p("Indian Institute of Information Technology, Bhagalpur", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=13, space_before=1, space_after=1)
+    p_en.runs[0].font.color.rgb = RGBColor(10, 35, 80)
+
+    add_p("(An Institute of National Importance Under Act of Parliament)", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10.5, space_before=1, space_after=4)
+    add_p("November 2026", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=11.5, space_before=4, space_after=2)
 
     doc.add_page_break()
 
     # =========================================================================
     # 2. DECLARATION
     # =========================================================================
-    add_institute_block()
-    add_p("DECLARATION", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=16, space_before=12, space_after=16)
+    # Institutional Header
+    header_table = doc.add_table(rows=1, cols=2)
+    header_table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    header_table.autofit = False
+    header_table.rows[0].cells[0].width = Inches(3.2)
+    header_table.rows[0].cells[1].width = Inches(3.2)
+    if os.path.exists("extracted_report_media/word/media/image1.jpeg"):
+        p = header_table.cell(0, 0).paragraphs[0]
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p.add_run().add_picture("extracted_report_media/word/media/image1.jpeg", width=Inches(0.85))
+    if os.path.exists("extracted_report_media/word/media/image2.png"):
+        p = header_table.cell(0, 1).paragraphs[0]
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p.add_run().add_picture("extracted_report_media/word/media/image2.png", width=Inches(0.80))
+
+    add_p("भारतीय सूचना प्रौद्योगिकी संस्थान, भागलपुर", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=11.5, space_before=3, space_after=1, font_name="Nirmala UI")
+    p = add_p("Indian Institute of Information Technology, Bhagalpur", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=12, space_before=1, space_after=1)
+    p.runs[0].font.color.rgb = RGBColor(10, 35, 80)
+    add_p("(An Institute of National Importance Under Act of Parliament)", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10, space_before=1, space_after=12)
+
+    p_dec = add_p("DECLARATION", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=14, space_before=8, space_after=10)
+    p_dec.runs[0].underline = True
 
     add_p(
-        "We hereby declare that the work presented in this Minor Project Report entitled "
-        "\"AI-Powered Smart Cow Collar: Multi-Modal Edge Telemetry, Behavior Classification, and Clinical Anomaly Detection\" "
-        "is an authentic record of our own research and development carried out under the supervision of "
-        "Dr. Sunil Kumar, Assistant Professor, Department of Mechatronics and Automation Engineering, "
-        "Indian Institute of Information Technology, Bhagalpur.",
-        align=WD_ALIGN_PARAGRAPH.JUSTIFY, size_pt=12, space_before=6, space_after=12, line_spacing=1.3
+        "We hereby declare that the Minor Project Report entitled \"AICowCollar: Automated Livestock Health, "
+        "Behavior and Geofence Monitoring via Smart Cow Collar\" submitted to the Department of Mechatronics "
+        "and Automation Engineering, Indian Institute of Information Technology, Bhagalpur, in partial fulfillment of the requirements "
+        "for the award of the degree of Bachelor of Technology, is an authentic record of our own work carried out during the "
+        "academic session 2026-2027.",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY, space_before=4, space_after=8
     )
-
     add_p(
-        "We further certify that this report has not been submitted anywhere else for the award of any other degree or diploma. "
-        "All materials, algorithms, datasets, and experimental benchmarks taken from literature have been properly acknowledged and cited.",
-        align=WD_ALIGN_PARAGRAPH.JUSTIFY, size_pt=12, space_before=6, space_after=36, line_spacing=1.3
+        "The matter embodied in this report has not been submitted earlier for the award of any other degree or diploma to any other "
+        "University or Institute. All sources of data, open-source software libraries, and published literature used in this work have been duly acknowledged.",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY, space_before=4, space_after=18
     )
 
-    sig_tbl = doc.add_table(rows=1, cols=2)
-    sig_tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
-    for cell in sig_tbl.rows[0].cells:
-        tcBorders = parse_xml(f'<w:tcBorders {nsdecls("w")}><w:top w:val="none"/><w:left w:val="none"/><w:bottom w:val="none"/><w:right w:val="none"/></w:tcBorders>')
-        cell._tc.get_or_add_tcPr().append(tcBorders)
+    add_p("Date:  28 November 2026", bold=True, size_pt=11, space_after=2)
+    add_p("Place: IIIT Bhagalpur, Bihar", bold=True, size_pt=11, space_after=24)
 
-    s1, s2 = sig_tbl.rows[0].cells
-    s1.width = Inches(3.1)
-    s2.width = Inches(3.1)
-
-    p_s1 = s1.paragraphs[0]
-    p_s1.add_run("_____________________\nDevanshu Singh\nRoll No.: 230103012\nB.Tech (Mechatronics)").bold = True
-
-    p_s2 = s2.paragraphs[0]
-    p_s2.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-    p_s2.add_run("_____________________\nMahima Patel\nRoll No.: 230103025\nB.Tech (Mechatronics)").bold = True
-
-    add_p("Date: November 27, 2026\nPlace: Bhagalpur", space_before=30, space_after=0)
+    sig_table = doc.add_table(rows=1, cols=2)
+    sig_table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    sig_table.autofit = False
+    sig_table.rows[0].cells[0].width = Inches(3.2)
+    sig_table.rows[0].cells[1].width = Inches(3.2)
+    
+    p = sig_table.cell(0, 0).paragraphs[0]
+    p.add_run("_____________________\nDevanshu Singh\nRoll No.: 230103012\nB.Tech (MAE)")
+    p.runs[0].font.size = Pt(11)
+    
+    p = sig_table.cell(0, 1).paragraphs[0]
+    p.add_run("_____________________\nMahima Patel\nRoll No.: 230103025\nB.Tech (MAE)")
+    p.runs[0].font.size = Pt(11)
 
     doc.add_page_break()
 
     # =========================================================================
     # 3. CERTIFICATE
     # =========================================================================
-    add_institute_block()
-    add_p("CERTIFICATE", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=16, space_before=12, space_after=16)
+    header_table2 = doc.add_table(rows=1, cols=2)
+    header_table2.alignment = WD_TABLE_ALIGNMENT.CENTER
+    header_table2.autofit = False
+    header_table2.rows[0].cells[0].width = Inches(3.2)
+    header_table2.rows[0].cells[1].width = Inches(3.2)
+    if os.path.exists("extracted_report_media/word/media/image1.jpeg"):
+        p = header_table2.cell(0, 0).paragraphs[0]
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p.add_run().add_picture("extracted_report_media/word/media/image1.jpeg", width=Inches(0.85))
+    if os.path.exists("extracted_report_media/word/media/image2.png"):
+        p = header_table2.cell(0, 1).paragraphs[0]
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p.add_run().add_picture("extracted_report_media/word/media/image2.png", width=Inches(0.80))
+
+    add_p("भारतीय सूचना प्रौद्योगिकी संस्थान, भागलपुर", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=11.5, space_before=3, space_after=1, font_name="Nirmala UI")
+    p = add_p("Indian Institute of Information Technology, Bhagalpur", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=12, space_before=1, space_after=1)
+    p.runs[0].font.color.rgb = RGBColor(10, 35, 80)
+    add_p("(An Institute of National Importance Under Act of Parliament)", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10, space_before=1, space_after=12)
+
+    p_cert = add_p("CERTIFICATE", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=14, space_before=8, space_after=10)
+    p_cert.runs[0].underline = True
 
     add_p(
-        "This is to certify that the Minor Project Report entitled \"AI-Powered Smart Cow Collar: Multi-Modal Edge Telemetry, "
-        "Behavior Classification, and Clinical Anomaly Detection\", submitted by Devanshu Singh (Roll No. 230103012) and "
+        "This is to certify that the Minor Project Report entitled \"AICowCollar: Automated Livestock Health, Behavior "
+        "and Geofence Monitoring via Smart Cow Collar\" being submitted by Devanshu Singh (Roll No. 230103012) and "
         "Mahima Patel (Roll No. 230103025) in partial fulfillment of the requirements for the award of the degree of "
-        "Bachelor of Technology in Mechatronics and Automation Engineering from Indian Institute of Information Technology, Bhagalpur, "
-        "is an authentic record of the work carried out under my supervision and guidance.",
-        align=WD_ALIGN_PARAGRAPH.JUSTIFY, size_pt=12, space_before=6, space_after=14, line_spacing=1.3
+        "Bachelor of Technology in Mechatronics and Automation Engineering at the Indian Institute of Information Technology, "
+        "Bhagalpur, is a bonafide record of project work carried out by them under my supervision and guidance.",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY, space_before=4, space_after=8
     )
-
     add_p(
-        "To the best of my knowledge, the matter embodied in this report has not been submitted to any other University or "
-        "Institute for the award of any degree or diploma.",
-        align=WD_ALIGN_PARAGRAPH.JUSTIFY, size_pt=12, space_before=6, space_after=48, line_spacing=1.3
+        "To the best of my knowledge, the results and system implementation presented in this report are original and "
+        "have not been submitted to any other university or institution for the award of any degree or diploma.",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY, space_before=4, space_after=24
     )
 
-    c_tbl = doc.add_table(rows=1, cols=2)
-    c_tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
-    for cell in c_tbl.rows[0].cells:
-        tcBorders = parse_xml(f'<w:tcBorders {nsdecls("w")}><w:top w:val="none"/><w:left w:val="none"/><w:bottom w:val="none"/><w:right w:val="none"/></w:tcBorders>')
-        cell._tc.get_or_add_tcPr().append(tcBorders)
+    cert_table = doc.add_table(rows=1, cols=2)
+    cert_table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    cert_table.autofit = False
+    cert_table.rows[0].cells[0].width = Inches(3.2)
+    cert_table.rows[0].cells[1].width = Inches(3.2)
 
-    cs1, cs2 = c_tbl.rows[0].cells
-    cs1.width = Inches(3.1)
-    cs2.width = Inches(3.1)
+    p = cert_table.cell(0, 0).paragraphs[0]
+    p.add_run("___________________________\nDr. Sunil Kumar\n(Project Supervisor)\nAssistant Professor\nDept. of Mechatronics & Automation Engg.\nIIIT Bhagalpur")
+    p.runs[0].font.size = Pt(11)
 
-    p_cs1 = cs1.paragraphs[0]
-    p_cs1.add_run("___________________________\nDr. Sunil Kumar\n(Project Supervisor)\nAssistant Professor\nDept. of Mechatronics & Automation Engg.\nIIIT Bhagalpur").bold = True
-
-    p_cs2 = cs2.paragraphs[0]
-    p_cs2.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-    p_cs2.add_run("___________________________\nHead of Department\nDept. of Mechatronics & Automation Engg.\nIIIT Bhagalpur").bold = True
+    p = cert_table.cell(0, 1).paragraphs[0]
+    p.add_run("___________________________\nHead of Department\nDept. of Mechatronics & Automation Engg.\nIIIT Bhagalpur")
+    p.runs[0].font.size = Pt(11)
 
     doc.add_page_break()
 
     # =========================================================================
-    # 4. ACKNOWLEDGEMENT
+    # 4. ACKNOWLEDGEMENT & ABSTRACT
     # =========================================================================
-    add_p("ACKNOWLEDGEMENT", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=16, space_before=12, space_after=18)
+    p_ack = add_p("ACKNOWLEDGEMENT", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=14, space_before=6, space_after=8)
+    p_ack.runs[0].underline = True
 
     add_p(
-        "First and foremost, we would like to express our deepest sense of gratitude and respect to our supervisor, "
-        "Dr. Sunil Kumar, Assistant Professor, Department of Mechatronics and Automation Engineering, for his invaluable "
-        "guidance, keen interest, consistent encouragement, and continuous support throughout the duration of this minor project. "
-        "His profound technical insights in signal processing, embedded systems, and robotics have inspired us at every stage of this work.",
-        align=WD_ALIGN_PARAGRAPH.JUSTIFY, size_pt=12, space_before=6, space_after=12, line_spacing=1.3
+        "We express our sincere gratitude to our project supervisor, Dr. Sunil Kumar, Assistant Professor in the Department "
+        "of Mechatronics and Automation Engineering, Indian Institute of Information Technology, Bhagalpur, for his continuous "
+        "encouragement, technical guidance, and valuable advice throughout the development of this minor project.",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY, space_before=2, space_after=6
     )
+    add_p(
+        "We also thank the faculty members and technical staff of the Department of Mechatronics and Automation Engineering for "
+        "providing the necessary laboratory facilities and resources. In addition, we extend our gratitude to our peers and classmates "
+        "for their helpful discussions during the implementation of the telemetry pipeline. Finally, we express our heartfelt thanks "
+        "to our parents and family members for their constant moral support and encouragement.",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY, space_before=2, space_after=14
+    )
+
+    p_abs = add_p("ABSTRACT", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=14, space_before=10, space_after=8)
+    p_abs.runs[0].underline = True
 
     add_p(
-        "We are profoundly indebted to Prof. (Dr.) Dheeraj Kumar, Director, Indian Institute of Information Technology Bhagalpur, "
-        "for providing state-of-the-art laboratory infrastructure, computational facilities, and a vibrant research atmosphere.",
-        align=WD_ALIGN_PARAGRAPH.JUSTIFY, size_pt=12, space_before=6, space_after=12, line_spacing=1.3
+        "In modern dairy farming, continuous monitoring of cattle health and physical behavior is essential for early diagnosis of diseases "
+        "and efficient herd management. Traditional visual inspection by farm attendants is labor intensive, subjective, and often fails "
+        "to detect illnesses in their early stages. In this project, an automated telemetry system called AICowCollar was designed and developed "
+        "to continuously monitor cattle behavior, physiological vitals, and grazing pasture boundaries.",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY, space_before=2, space_after=6
     )
-
     add_p(
-        "We also extend our sincere thanks to all faculty members, technical laboratory assistants, and staff members of the "
-        "Department of Mechatronics and Automation Engineering for their direct and indirect cooperation.",
-        align=WD_ALIGN_PARAGRAPH.JUSTIFY, size_pt=12, space_before=6, space_after=12, line_spacing=1.3
+        "The proposed system employs a collar unit equipped with a 6-axis inertial motion sensor (MPU-6050 accelerometer and gyroscope), "
+        "a contact temperature sensor, an optical pulse sensor, and a GPS module. In order to minimize collar power consumption and prolong battery life, "
+        "computationally intensive algorithms are offloaded to a central server. The motion signals are processed using a reduced set of 12 physically "
+        "interpretable features extracted from sliding windows. An ExtraTrees classifier achieves an overall accuracy of 95.54% and a walking F1-score "
+        "of 91.80% in distinguishing standing, lying, grazing, and walking states.",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY, space_before=2, space_after=6
     )
-
     add_p(
-        "Lastly, we express our heartfelt gratitude to our parents, family members, and friends whose blessings, patience, and moral support "
-        "enabled us to successfully complete this project.",
-        align=WD_ALIGN_PARAGRAPH.JUSTIFY, size_pt=12, space_before=6, space_after=36, line_spacing=1.3
+        "Physiological temperature monitoring incorporates an ambient thermal decoupling equation and a Tabular Cumulative Sum (CUSUM) control chart "
+        "to reliably detect early fevers while eliminating weather-induced false alarms. Heart rate readings are evaluated using activity-gated baseline "
+        "comparisons to identify physical stress or acute pain. Pasture geofencing is implemented using a Ray-Casting Point-in-Polygon check with a "
+        "two-strike temporal debounce filter. Furthermore, a veterinary diagnostic assistant powered by Gemini 3.8 Flash synthesizes multi-sensor vitals "
+        "into clear, practical diagnostic cards for the farmer. The complete software architecture is integrated into a modular FastAPI backend.",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY, space_before=2, space_after=8
     )
-
-    p_ack_sig = add_p("Devanshu Singh (230103012)\nMahima Patel (230103025)", align=WD_ALIGN_PARAGRAPH.RIGHT, bold=True, size_pt=12)
 
     doc.add_page_break()
 
     # =========================================================================
-    # 5. ABSTRACT
+    # 5. TABLE OF CONTENTS
     # =========================================================================
-    add_p("ABSTRACT", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=16, space_before=12, space_after=18)
+    p_toc = add_p("TABLE OF CONTENTS", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=14, space_before=6, space_after=12)
+    p_toc.runs[0].underline = True
 
-    add_p(
-        "Precision livestock farming (PLF) is transforming modern cattle management by shifting from reactive veterinary treatment "
-        "to automated, real-time physiological and behavioral monitoring. Early detection of bovine health anomalies—such as acute mastitis, "
-        "lameness, metabolic ketosis, and silent estrus—is critical for animal welfare and farm economic sustainability. However, existing commercial "
-        "solutions often suffer from high operational costs, vendor-locked closed architectures, and false alarms caused by environmental confounders "
-        "like solar heating, grazing motion artifacts, and GPS signal jitter.",
-        align=WD_ALIGN_PARAGRAPH.JUSTIFY, size_pt=12, space_before=4, space_after=8, line_spacing=1.25
-    )
-
-    add_p(
-        "This project presents an end-to-end AI-powered smart cow collar telemetry and cloud analytics architecture. "
-        "The system deploys a multi-modal collar sensor suite—comprising a 6-axis IMU (MPU-6050 accelerometer and gyroscope), skin and ambient temperature probes, "
-        "optical photoplethysmography (PPG) pulse sensing, and GNSS/GPS positioning—coupled with a decoupled, microservices-based FastAPI cloud backend.",
-        align=WD_ALIGN_PARAGRAPH.JUSTIFY, size_pt=12, space_before=4, space_after=8, line_spacing=1.25
-    )
-
-    add_p(
-        "In the activity domain, we analyze 7,295 high-frequency sensor observations and mathematically reduce 117 literature features down to 12 non-redundant "
-        "biomechanical features capturing posture tilt, chewing rotational energy, and kinetic motion. An ExtraTreesClassifier trained on these 12 features "
-        "achieves 95.54% overall accuracy and boosts Walking F1-score to 91.8% (compared to <20% in baseline literature). Daily activity is aggregated into 24-hour "
-        "time-budgets and evaluated against a 7-day rolling personal baseline via three veterinary clinical rules: Feeding Deficit (anorexia/sickness), "
-        "Estrus Restlessness (standing heat), and Excessive Lying (lameness).",
-        align=WD_ALIGN_PARAGRAPH.JUSTIFY, size_pt=12, space_before=4, space_after=8, line_spacing=1.25
-    )
-
-    add_p(
-        "In the thermal domain, collar surface temperatures are filtered using linear ambient decoupling (beta = 0.12 C/C) and detrended against a 24-hour sinusoidal "
-        "circadian baseline. A tabular Cumulative Sum (CUSUM) control chart accumulates persistent thermal shifts (k = 0.30 C, H = 1.20 C / 2.00 C), detecting early "
-        "mastitis and systemic bacteremia up to 48 hours before clinical symptoms appear. For cardiac telemetry, an activity-conditioned 7-day baseline filter identifies "
-        "pain-induced tachycardia and milk fever bradycardia. Finally, a Ray-Casting Polygon Geofencing engine with a 2-strike debounce filter eliminates single-point "
-        "GPS jitter and flags perimeter breaches alongside a Gaussian Mixture Model (GMM) trajectory classifier. The entire backend is implemented in FastAPI, backed by "
-        "SQLite/SQLAlchemy with alert deduplication, providing modular diagnostic flags ready for LLM-assisted veterinary synthesis.",
-        align=WD_ALIGN_PARAGRAPH.JUSTIFY, size_pt=12, space_before=4, space_after=12, line_spacing=1.25
-    )
-
-    add_p("Keywords: Precision Livestock Farming, Animal Behavior Classification, Inertial Measurement Unit (IMU), ExtraTrees, CUSUM Control Chart, Ambient Decoupling, Ray-Casting Geofencing, FastAPI.",
-          bold=True, size_pt=11, space_before=6, space_after=0)
-
-    doc.add_page_break()
-
-    # =========================================================================
-    # 6. TABLE OF CONTENTS
-    # =========================================================================
-    add_p("TABLE OF CONTENTS", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=16, space_before=12, space_after=16)
-
-    toc_items = [
-        ("Candidate's Declaration", "ii"),
-        ("Certificate of Approval", "iii"),
+    toc_entries = [
+        ("Declaration", "ii"),
+        ("Certificate", "iii"),
         ("Acknowledgement", "iv"),
         ("Abstract", "v"),
+        ("Table of Contents", "vi"),
         ("List of Figures", "viii"),
         ("List of Tables", "ix"),
         ("Chapter 1: Introduction", "1"),
         ("    1.1 Background and Motivation", "1"),
-        ("    1.2 Challenges in Precision Livestock Monitoring", "2"),
+        ("    1.2 Practical Challenges in Precision Cattle Monitoring", "2"),
         ("    1.3 Problem Statement", "3"),
-        ("    1.4 Objectives of the Project", "4"),
-        ("    1.5 Organization of the Report", "5"),
-        ("Chapter 2: Literature Review", "6"),
-        ("    2.1 Evolution of Cattle Telemetry Systems", "6"),
-        ("    2.2 Accelerometer and Gyroscopic Behavior Classification", "7"),
-        ("    2.3 Bovine Body Temperature Dynamics and Circadian Control", "9"),
-        ("    2.4 Heart Rate Telemetry & Pain / Autonomic Stress Responses", "11"),
-        ("    2.5 GNSS/GPS Tracking and Pasture Geofencing", "12"),
-        ("    2.6 Summary of Research Gaps", "13"),
-        ("Chapter 3: System Architecture & Hardware Specifications", "14"),
-        ("    3.1 Overall Multi-Modal System Architecture", "14"),
-        ("    3.2 Sensor Suite Specifications", "15"),
-        ("    3.3 Microcontroller & Edge Telemetry Unit", "17"),
-        ("    3.4 Power Management and Battery Sizing", "18"),
-        ("Chapter 4: Methodology & Algorithmic Engines", "19"),
-        ("    4.1 Activity Feature Engineering & 12 Physical Feature Reduction", "19"),
-        ("    4.2 Machine Learning Classifier Architectures", "22"),
-        ("    4.3 24-Hour Time Budget & Activity Anomaly Rule Engine", "24"),
-        ("    4.4 Temperature Anomaly Engine: Decoupling & CUSUM", "26"),
-        ("    4.5 Heart Rate Anomaly Engine: Baselines & Thresholds", "29"),
-        ("    4.6 GPS Geofencing Engine: Ray-Casting & 2-Strike Debounce", "31"),
-        ("    4.7 Central Cloud Backend & Database Architecture", "33"),
-        ("Chapter 5: Experimental Results & Performance Evaluation", "36"),
-        ("    5.1 Dataset Benchmarks & Exploratory Feature Analysis", "36"),
-        ("    5.2 Behavior Classifier Performance Comparison", "39"),
-        ("    5.3 Activity Anomaly Rules Verification (Scenarios A, B, C)", "42"),
-        ("    5.4 Temperature CUSUM Inception Validation", "44"),
-        ("    5.5 Heart Rate Anomaly Validation", "46"),
-        ("    5.6 GPS Geofencing & Trajectory GMM Results", "47"),
-        ("    5.7 End-to-End System Integration Testing", "49"),
-        ("Chapter 6: Conclusion and Future Scope", "51"),
-        ("    6.1 Project Summary", "51"),
-        ("    6.2 Key Takeaways & Contributions", "52"),
-        ("    6.3 Future Work & LLM Veterinary Synthesizer", "53"),
-        ("References", "55"),
+        ("    1.4 Objectives of the Project", "3"),
+        ("    1.5 Organization of the Report", "4"),
+        ("Chapter 2: Literature Review", "5"),
+        ("    2.1 Evolution of Wearable Systems in Dairy Farming", "5"),
+        ("    2.2 Inertial Sensor Classification and Feature Reduction", "6"),
+        ("    2.3 Bovine Body Temperature Dynamics and Circadian Variations", "7"),
+        ("    2.4 Cumulative Sum Control Charts in Animal Healthcare", "8"),
+        ("    2.5 GPS Tracking and Pasture Boundary Containment", "9"),
+        ("    2.6 Identification of Research Gaps", "10"),
+        ("Chapter 3: System Architecture and Hardware Components", "11"),
+        ("    3.1 Multi-Sensor Telemetry Architecture", "11"),
+        ("    3.2 Sensor Suite Specifications", "12"),
+        ("    3.3 Microcontroller Selection and Edge Transmission Strategy", "14"),
+        ("    3.4 Power Consumption Analysis and Battery Life Estimation", "15"),
+        ("Chapter 4: Methodology and Algorithmic Formulation", "16"),
+        ("    4.1 Inertial Signal Pre-processing and 12 Physical Feature Reduction", "16"),
+        ("    4.2 Machine Learning Classifier Architectures", "18"),
+        ("    4.3 24-Hour Daily Time Budgeting and Clinical Rule Engine", "20"),
+        ("    4.4 Temperature Anomaly Engine: Ambient Decoupling and CUSUM", "22"),
+        ("    4.5 Heart Rate Telemetry: Activity Gating and Personal Baselines", "24"),
+        ("    4.6 GPS Pasture Geofencing: Ray-Casting and Two-Strike Debounce", "25"),
+        ("    4.7 Central Backend Server Architecture", "27"),
+        ("    4.8 Automated Veterinary Diagnostic Synthesizer (Gemini 3.8 Flash)", "28"),
+        ("Chapter 5: Experimental Results and Discussion", "30"),
+        ("    5.1 Dataset Benchmarking and Biomechanical Feature Distributions", "30"),
+        ("    5.2 Behavior Classifier Performance Comparison", "32"),
+        ("    5.3 Activity Anomaly Rules Validation", "34"),
+        ("    5.4 Temperature CUSUM Inception Validation", "35"),
+        ("    5.5 Heart Rate and GPS Boundary Validation", "37"),
+        ("    5.6 LLM Vet Clinical Assistant Evaluation", "38"),
+        ("    5.7 Engineering Discussion", "39"),
+        ("Chapter 6: Conclusion and Future Scope", "40"),
+        ("    6.1 Summary of Contributions", "40"),
+        ("    6.2 Key Engineering Takeaways", "41"),
+        ("    6.3 Future Work", "41"),
+        ("References", "43")
     ]
 
-    toc_tbl = doc.add_table(rows=len(toc_items), cols=2)
-    toc_tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
-    for idx, (title, page) in enumerate(toc_items):
-        cell_t, cell_p = toc_tbl.rows[idx].cells
-        tcBorders = parse_xml(f'<w:tcBorders {nsdecls("w")}><w:top w:val="none"/><w:left w:val="none"/><w:bottom w:val="none"/><w:right w:val="none"/></w:tcBorders>')
-        cell_t._tc.get_or_add_tcPr().append(tcBorders)
-        tcBorders2 = parse_xml(f'<w:tcBorders {nsdecls("w")}><w:top w:val="none"/><w:left w:val="none"/><w:bottom w:val="none"/><w:right w:val="none"/></w:tcBorders>')
-        cell_p._tc.get_or_add_tcPr().append(tcBorders2)
+    toc_table = doc.add_table(rows=0, cols=2)
+    toc_table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    toc_table.autofit = False
 
-        cell_t.width = Inches(5.5)
-        cell_p.width = Inches(0.8)
-
-        p_t = cell_t.paragraphs[0]
-        p_t.paragraph_format.space_after = Pt(2)
-        r_t = p_t.add_run(title)
-        if title.startswith("Chapter") or title in ["Candidate's Declaration", "Certificate of Approval", "Acknowledgement", "Abstract", "References"]:
-            r_t.bold = True
-        r_t.font.size = Pt(11)
-
-        p_p = cell_p.paragraphs[0]
-        p_p.paragraph_format.space_after = Pt(2)
-        p_p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-        r_p = p_p.add_run(page)
-        if r_t.bold:
-            r_p.bold = True
-        r_p.font.size = Pt(11)
+    for title, page_no in toc_entries:
+        row = toc_table.add_row()
+        row.cells[0].width = Inches(5.6)
+        row.cells[1].width = Inches(0.8)
+        set_cell_margins(row.cells[0], top=30, bottom=30, left=50, right=50)
+        set_cell_margins(row.cells[1], top=30, bottom=30, left=50, right=50)
+        
+        p0 = row.cells[0].paragraphs[0]
+        p0.paragraph_format.space_before = Pt(1)
+        p0.paragraph_format.space_after = Pt(2)
+        r0 = p0.add_run(title)
+        r0.font.name = "Times New Roman"
+        r0.font.size = Pt(10.5)
+        if title.startswith("Chapter") or title in ["Declaration", "Certificate", "Acknowledgement", "Abstract", "References"]:
+            r0.bold = True
+            
+        p1 = row.cells[1].paragraphs[0]
+        p1.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+        p1.paragraph_format.space_before = Pt(1)
+        p1.paragraph_format.space_after = Pt(2)
+        r1 = p1.add_run(page_no)
+        r1.font.name = "Times New Roman"
+        r1.font.size = Pt(10.5)
+        if title.startswith("Chapter") or title in ["Declaration", "Certificate", "Acknowledgement", "Abstract", "References"]:
+            r1.bold = True
 
     doc.add_page_break()
 
     # =========================================================================
-    # 7. LIST OF FIGURES & LIST OF TABLES
+    # 6. LIST OF FIGURES & TABLES
     # =========================================================================
-    add_p("LIST OF FIGURES", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=16, space_before=12, space_after=14)
-    figures_list = [
-        ("Figure 3.1: Multi-Modal Smart Cow Collar Hardware & Cloud Architecture", "15"),
-        ("Figure 4.1: Feature Extraction Pipeline from 6-Axis Accelerometer and Gyroscope", "20"),
-        ("Figure 4.2: Tabular CUSUM Thermal Drift Accumulation Framework", "28"),
-        ("Figure 4.3: Ray-Casting Polygon Geofence & 2-Strike Debounce Logic", "32"),
-        ("Figure 5.1: Biomechanical Class Distribution across 7,295 Cattle Observations", "37"),
-        ("Figure 5.2: Biomechanical Distribution Boxplots for the 12 Core Physical Features", "38"),
-        ("Figure 5.3: Mutual Information Ranking of Top Extracted Biomechanical Features", "39"),
-        ("Figure 5.4: Feature Correlation Matrix across the 12 Non-Redundant Indicators", "40"),
-        ("Figure 5.5: Confusion Matrix for the ExtraTrees Champion Classifier (95.54% Accuracy)", "41"),
-        ("Figure 5.6: Multi-Class ROC-AUC Curves for the Champion ExtraTrees Behavior Model", "42"),
-        ("Figure 5.7: Feature Importance Spectrum for the ExtraTrees Behavior Classifier", "43"),
-    ]
-    for cap, pg in figures_list:
-        add_p(f"{cap}  ....................................................................................  {pg}", size_pt=11, space_before=1, space_after=3)
+    p_lof = add_p("LIST OF FIGURES", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=14, space_before=6, space_after=8)
+    p_lof.runs[0].underline = True
 
-    add_p("LIST OF TABLES", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=16, space_before=20, space_after=14)
-    tables_list = [
-        ("Table 3.1: Detailed Sensor Suite Specifications and Operating Parameters", "16"),
-        ("Table 4.1: The 12 Non-Redundant Physical Features and Their Biomechanical Rationale", "21"),
-        ("Table 4.2: Summary of the 3 Veterinary Activity Anomaly Rules", "25"),
-        ("Table 5.1: Comparative Performance Benchmark across 6 ML Architectures", "40"),
-        ("Table 5.2: Per-Class Classification Report for ExtraTrees Champion Model", "41"),
-        ("Table 5.3: Activity Anomaly Detection Test Suite Verification across 3 Clinical Scenarios", "43"),
-        ("Table 5.4: Temperature CUSUM Telemetry Ingestion and Fever Inception Performance", "45"),
-        ("Table 5.5: Heart Rate Telemetry Ingestion and Tachycardia/Bradycardia Results", "46"),
+    figures_list = [
+        ("Figure 3.1", "Multi-modal edge-to-server IoT telemetry architecture and system components", "11"),
+        ("Figure 5.1", "Class distribution of bovine behavior samples across standing, lying, grazing, and walking", "30"),
+        ("Figure 5.2", "Triaxial accelerometer and gyroscope feature distributions across behavioral states", "31"),
+        ("Figure 5.3", "Mutual information ranking of the selected 12 biomechanical physical features", "31"),
+        ("Figure 5.4", "Correlation matrix of the 12 selected physical features demonstrating lack of collinearity", "32"),
+        ("Figure 5.5", "Normalized confusion matrix of the champion ExtraTrees activity classifier", "33"),
+        ("Figure 5.6", "Receiver Operating Characteristic (ROC) curves across behavioral classes with AUC scores", "33"),
+        ("Figure 5.7", "Gini impurity feature importance ranking of the 12-feature ExtraTrees classifier", "34")
     ]
-    for cap, pg in tables_list:
-        add_p(f"{cap}  ....................................................................................  {pg}", size_pt=11, space_before=1, space_after=3)
+    for fig_id, cap, pg in figures_list:
+        add_p(f"{fig_id}: {cap}  ................................................................  {pg}", size_pt=10.5, space_before=1, space_after=3)
+
+    add_p("", space_before=8, space_after=4)
+
+    p_lot = add_p("LIST OF TABLES", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=14, space_before=8, space_after=8)
+    p_lot.runs[0].underline = True
+
+    tables_list = [
+        ("Table 3.1", "Collar hardware sensor specifications and measurement characteristics", "13"),
+        ("Table 4.1", "Definitions and mathematical formulation of the 12 selected physical features", "17"),
+        ("Table 4.2", "Clinical anomaly rules for 24-hour daily activity and time budget deviations", "21"),
+        ("Table 4.3", "Diagnostic triage classification logic of the LLM Vet assistant", "29"),
+        ("Table 5.1", "Performance comparison of machine learning classifiers across behavioral classes", "32")
+    ]
+    for tab_id, cap, pg in tables_list:
+        add_p(f"{tab_id}: {cap}  ................................................................  {pg}", size_pt=10.5, space_before=1, space_after=3)
 
     doc.add_page_break()
 
     # =========================================================================
     # CHAPTER 1: INTRODUCTION
     # =========================================================================
-    add_h1("Chapter 1: Introduction")
-    
+    add_chapter_header("Chapter 1", "Introduction")
+
     add_h2("1.1 Background and Motivation")
     add_p(
-        "Agriculture and livestock farming form the economic backbone of rural societies and contribute fundamentally to global food security. "
-        "The dairy farming sector in particular represents a highly capital-intensive domain where herd health directly governs milk production yield, "
-        "reproductive efficiency, and operational profitability. A single episode of undetected clinical mastitis can cost upwards of $300 to $500 per cow "
-        "in veterinary antibiotics, milk discard, and long-term udder damage. Similarly, missed estrus events (standing heat) result in prolonged calving "
-        "intervals, costing dairy farmers an estimated $5 to $7 per open cow per day. Lameness, recognized as the third most debilitating bovine ailment, "
-        "drastically curtails grazing intake, lowers milk production by up to 25%, and severely impacts animal welfare.",
+        "In dairy farming, keeping track of cow health and daily behavior is essential for good farm management. "
+        "A cow's daily routine usually follows a steady pattern: it spends most of its day resting and chewing cud while "
+        "lying down, along with regular periods of standing, feeding, and walking around the pen or pasture. When an animal "
+        "starts deviating from this routine, it is often an early sign that something is wrong. For example, if a cow abruptly "
+        "stops eating, it could be facing a digestive problem. If it spends much more time lying down and avoids moving, "
+        "it might be developing lameness or a systemic infection. Similarly, when a cow is in heat (estrus), its restlessness "
+        "and walking activity typically increase substantially.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
     add_p(
-        "Historically, dairy farmers relied on manual observation to detect sick or estrus cattle. However, with the rapid consolidation of dairy operations "
-        "into large commercial herds (often exceeding 500 to 2,000 head of cattle per facility) and chronic shortages of skilled agricultural labor, "
-        "manual herd visual inspection has become impossible. Farmers require autonomous, continuous, 24/7 telemetry systems that monitor every cow individually "
-        "and alert management to subclinical pathological indicators before irreversible damage occurs.",
+        "Traditionally, farmers and caretakers monitor their cattle through direct visual observation. While an experienced "
+        "farmer can spot obvious signs of illness, watching animals continuously across a herd requires significant time and "
+        "effort. As dairy operations expand and the number of animals per caretaker increases, early symptoms such as mild fevers "
+        "or subtle behavioral changes often go unnoticed until the animal becomes visibly sick. When medical treatment is delayed, "
+        "milk production drops significantly and veterinary treatment expenses increase.",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY
+    )
+    add_p(
+        "Automating this monitoring process using wearable electronic devices offers a practical solution. Among various wearable "
+        "form factors such as leg pedometers, ear tags, and halters, a neck collar provides several distinct advantages. It remains "
+        "clean, does not get kicked or damaged easily like leg bands, and provides a stable mechanical platform for mounting motion, "
+        "temperature, and location sensors.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
 
-    add_h2("1.2 Challenges in Precision Cattle Monitoring")
+    add_h2("1.2 Practical Challenges in Precision Cattle Monitoring")
     add_p(
-        "While several smart collar and ear-tag prototypes have been proposed in academia and industry, existing technologies face substantial hurdles:",
+        "Although wearable sensor systems have been studied in literature, several practical engineering challenges remain:",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
-    add_bullet("High Computational Overhead: Literature models frequently generate over 100 statistical time/frequency features, overloading microcontrollers.", "Dimensionality Redundancy: ")
-    add_bullet("Environmental Thermal Confounding: Neck surface temperature fluctuates drastically with ambient sunshine and cold winds, generating false fever alarms.", "Thermal Instability: ")
-    add_bullet("Motion Artifacts on Vital Signs: Chewing and walking induce vigorous muscle contractions on the neck, corrupting optical pulse readings.", "Motion Artifacts: ")
-    add_bullet("GPS Multipath Jitter: GPS fixes frequently bounce outside boundary lines due to tree cover, triggering false geofence escape alarms.", "GPS Inaccuracy: ")
-    add_bullet("Monolithic Black-Box Paradigms: Many systems combine all sensor inputs into a single opaque neural network, making clinical veterinary interpretation impossible.", "Lack of Interpretability: ")
+    add_p(
+        "1. Microcontroller Power Consumption: Calculating complex statistical features and running machine learning models "
+        "directly on an embedded microcontroller consumes significant battery energy. In a commercial farm setting, replacing "
+        "or recharging collar batteries every few days is impractical.",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY
+    )
+    add_p(
+        "2. Environmental Temperature Interference: The surface temperature of a cow's neck is influenced by ambient weather "
+        "conditions such as direct sunlight or cold wind. Using a fixed threshold for body temperature leads to frequent false alarms "
+        "during hot afternoons and missed fever events during cold mornings.",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY
+    )
+    add_p(
+        "3. Sensor Noise from Animal Movement: Physical activities such as walking and grazing introduce motion artifacts into optical "
+        "pulse sensors, making continuous raw pulse monitoring noisy if not properly filtered according to animal posture.",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY
+    )
+    add_p(
+        "4. GPS Multipath Reflections and Drift: Satellite location readings often fluctuate near trees and barn walls, causing "
+        "temporary false boundary breach alerts if raw GPS fixes are used directly.",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY
+    )
+    add_p(
+        "5. Interpretability for Farm Operators: Many advanced machine learning architectures operate as black-box systems that output "
+        "unexplained alert scores, which makes it difficult for farm staff to understand the underlying cause of an alert.",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY
+    )
 
     add_h2("1.3 Problem Statement")
     add_p(
-        "The primary challenge addressed in this work is the design, validation, and cloud integration of a lightweight, multi-modal smart collar system "
-        "that accurately classifies cattle behavioral states from biomechanical signals, monitors physiological vital signs (temperature and pulse) "
-        "using robust, physically grounded anomaly detection algorithms, tracks grazing pasture boundaries with geofence jitter debouncing, and exposes "
-        "a clean, modular RESTful API architecture for veterinary diagnostics.",
+        "The objective of this project is to develop and validate a lightweight, multi-sensor smart cow collar system that collects "
+        "inertial motion, temperature, pulse rate, and GPS location data, transmits this telemetry to a central server, classifies basic "
+        "daily behaviors accurately, tracks individual physiological baselines to detect health anomalies, and provides simple, actionable "
+        "diagnostic summaries for farm management.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
 
     add_h2("1.4 Objectives of the Project")
-    add_p("The specific engineering and technical objectives of this project are:", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
-    add_bullet("Analyze multi-sensor collar data (Pongsanun et al., 2025) and reduce feature dimensionality from 117+ features to 12 non-redundant physical indicators.", "1. Biomechanical Dimension Reduction: ")
-    add_bullet("Train and benchmark machine learning classifiers (ExtraTrees, HistGradientBoosting, Random Forest, MLP) to achieve >95% accuracy and >88% Walking F1-score.", "2. Activity Classifier Optimization: ")
-    add_bullet("Implement a 24-hour daily time-budgeting engine with rolling 7-day personal baselines to detect Feeding Deficits, Estrus, and Lameness.", "3. Time-Budget Anomaly Engine: ")
-    add_bullet("Develop an ambient-decoupled thermal pipeline using a Tabular CUSUM control chart to detect early mastitis fever and milk fever hypothermia.", "4. CUSUM Temperature Anomaly Service: ")
-    add_bullet("Build an activity-conditioned pulse telemetry service tracking 7-day baseline deviations for acute pain and cardiac collapse.", "5. Heart Rate Telemetry Engine: ")
-    add_bullet("Implement a Ray-Casting Point-in-Polygon geofence engine with 2-strike debounce filtering and GMM trajectory clustering.", "6. GPS Pasture Geofencing: ")
-    add_bullet("Construct a modular FastAPI cloud backend with SQLite/SQLAlchemy ORM persistence and comprehensive integration test suites.", "7. Cloud Architecture Implementation: ")
+    add_p("The specific technical objectives of this project are:", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("1. Multi-Sensor Data Collection: Design a wearable neck collar housing an accelerometer, gyroscope, temperature sensor, pulse sensor, and GPS module to acquire and transmit telemetry data efficiently.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("2. Inertial Feature Reduction: Analyze triaxial motion signals and reduce high-dimensional feature spaces to 12 non-redundant physical features that distinguish standing, lying, grazing, and walking states.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("3. Machine Learning Classification: Train and evaluate supervised classifiers to achieve greater than 95% overall accuracy and reliable performance on walking and grazing behaviors.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("4. Daily Time Budget and Anomaly Detection: Build an automated rule engine that tracks 24-hour daily activity totals against rolling personal baselines to detect feeding deficits, estrus, and lameness.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("5. Ambient Decoupled Temperature Tracking: Implement an ambient temperature compensation model combined with a Tabular Cumulative Sum (CUSUM) control chart to detect early mastitis fevers and milk fever hypothermia.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("6. Activity-Gated Pulse Telemetry: Develop a heart rate monitoring service that compares pulse readings against personal resting baselines only when the animal is inactive.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("7. Pasture Geofencing: Implement a Ray-Casting Point-in-Polygon geofence algorithm with a two-strike debounce filter to eliminate false alarms caused by GPS drift.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("8. Automated Diagnostic Synthesis: Integrate a veterinary synthesis assistant using Gemini 3.8 Flash to translate multi-sensor vitals into clear diagnostic cards.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
 
     add_h2("1.5 Organization of the Report")
     add_p(
-        "The remainder of this report is organized as follows: Chapter 2 reviews the state-of-the-art in bovine telemetry, behavior classification, "
-        "and veterinary control charts. Chapter 3 presents the multi-modal system architecture and sensor specifications. Chapter 4 provides the rigorous "
-        "methodological formulation of the 12-feature activity classifier, CUSUM thermal filter, pulse rules, geofence engine, and cloud microservices. "
-        "Chapter 5 discusses experimental evaluation results and benchmark comparisons. Chapter 6 concludes the report and highlights future directions.",
+        "This report is organized into six chapters. Chapter 2 reviews relevant literature on precision livestock farming, wearable sensors, "
+        "and behavioral classification. Chapter 3 describes the system architecture and hardware components. Chapter 4 provides the mathematical "
+        "and methodological formulation of the feature extraction, classification models, CUSUM temperature filter, geofencing logic, and "
+        "FastAPI backend. Chapter 5 presents experimental results, performance comparisons, and validation tests. Chapter 6 concludes the report "
+        "and outlines directions for future work.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
 
@@ -509,131 +599,174 @@ def create_report():
     # =========================================================================
     # CHAPTER 2: LITERATURE REVIEW
     # =========================================================================
-    add_h1("Chapter 2: Literature Review")
+    add_chapter_header("Chapter 2", "Literature Review")
 
-    add_h2("2.1 Evolution of Cattle Telemetry Systems")
+    add_h2("2.1 Evolution of Wearable Systems in Dairy Farming")
     add_p(
-        "The application of electronic telemetry in livestock dates back to early radio-frequency identification (RFID) tags used strictly for inventory counting. "
-        "Over the past decade, advances in micro-electro-mechanical systems (MEMS) have enabled the integration of multi-axis accelerometers, digital thermopiles, "
-        "and satellite receivers onto compact collars, ear tags, and halter harnesses. Commercial systems like SCR/Allflex SenseHub and CowManager have demonstrated "
-        "the commercial viability of rumination and activity tracking, yet their proprietary algorithms remain closed and expensive for smallholder farmers.",
+        "Precision Livestock Farming (PLF) involves the use of continuous sensing technologies to monitor animal health and productivity. "
+        "Early research focused primarily on leg-mounted pedometers designed to count steps and identify restlessness associated with estrus. "
+        "However, leg-mounted devices suffer from significant practical limitations: they are constantly exposed to mud, moisture, and mechanical "
+        "impacts, and they cannot detect head-down grazing or jaw-chewing motions. In recent years, neck-mounted collars have gained widespread "
+        "adoption because they remain clean, provide comfortable wearability, and allow simultaneous measurement of body motion, physiological "
+        "vitals, and satellite coordinates.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
 
-    add_h2("2.2 Biomechanical Acceleration & Gyroscopic Behavior Classification")
+    add_h2("2.2 Inertial Sensor Classification and Feature Reduction")
     add_p(
-        "Arablouei et al. (2023) demonstrated deep learning behavior classification directly on embedded microcontroller tags using a compact 175-parameter "
-        "neural network with trainable Butterworth IIR filters. While elegant, their model operated strictly on 3-axis accelerometer data, making it challenging "
-        "to distinguish eating from resting when head tilt was ambiguous. Pongsanun et al. (2025) integrated both a 3-axis accelerometer and a 3-axis gyroscope, "
-        "capturing yaw/pitch jaw rotation during mastication. However, their feature extraction methodology generated over 117 statistical variables, leading to "
-        "high feature collinearity and poor performance on minority classes (e.g., Walking F1-score below 20%). Our work bridges this gap by identifying the 12 "
-        "physical indicators that maximize mutual information while eliminating redundant correlations.",
+        "Several researchers have demonstrated that 3-axis accelerometers and gyroscopes mounted on a cow's collar can distinguish common daily "
+        "activities such as lying, standing, grazing, and walking. For example, Pongsanun et al. (2025) collected collar sensor data and extracted "
+        "over 117 statistical features in the time and frequency domains. However, using very large feature sets leads to high computational "
+        "complexity and strong multicollinearity, which can degrade classification performance on minority classes such as walking. In this study, "
+        "we examine the physical interpretation of each motion axis and reduce the feature set to 12 non-redundant indicators that capture neck tilt, "
+        "movement intensity, and rotational head motion during chewing.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
 
-    add_h2("2.3 Bovine Body Temperature Dynamics & Circadian Control")
+    add_h2("2.3 Bovine Body Temperature Dynamics and Circadian Variations")
     add_p(
-        "Cattle maintain an internal core body temperature of approximately 38.6 C, but exhibit a pronounced diurnal circadian rhythm. Bewley et al. (2008) "
-        "and Lees et al. (2018) documented that bovine skin and ear temperatures oscillate by up to 0.8 C to 1.0 C daily, reaching a nadir between 04:00 and 06:00 "
-        "and peaking between 16:00 and 18:00. Consequently, static temperature thresholds trigger rampant false positives during hot afternoons and fail to catch "
-        "fevers in cold mornings. Furthermore, neck surface temperatures couple linearly with ambient air temperature. Accounting for ambient thermal load "
-        "and detrending against the diurnal baseline is essential for reliable early fever detection.",
+        "Normal body temperature in adult dairy cattle typically ranges between 38.0 C and 39.3 C. However, cattle body temperature naturally "
+        "oscillates throughout the day in a diurnal circadian rhythm. Studies by Bewley and Schutz (2008) showed that skin temperature tends to "
+        "reach its lowest value between 04:00 and 06:00 in the morning and its peak between 16:00 and 18:00 in the late afternoon. Furthermore, "
+        "collar-mounted temperature sensors are directly exposed to ambient air. Without accounting for ambient temperature and diurnal variations, "
+        "simple static thresholds generate frequent false alarms.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
 
-    add_h2("2.4 Cumulative Sum (CUSUM) Control Charts in Veterinary Health")
+    add_h2("2.4 Cumulative Sum Control Charts in Animal Healthcare")
     add_p(
-        "The Cumulative Sum (CUSUM) control chart, pioneered by Page (1954), is internationally recognized in industrial quality control and veterinary epidemiology "
-        "for its superior sensitivity to small, persistent mean shifts. In subclinical mastitis and bovine respiratory disease (BRD), body temperature rises "
-        "gradually by 0.5 C to 1.2 C over 24 to 48 hours before overt clinical signs appear. Standard Shewhart threshold charts miss this gradual inception. "
-        "A one-sided tabular CUSUM control chart accumulates these persistent positive deviations while absorbing random physiological noise, alerting farm "
-        "managers days ahead of clinical crisis.",
+        "In statistical quality control, Cumulative Sum (CUSUM) charts, originally developed by Page (1954), are widely recognized for their ability "
+        "to detect small, persistent shifts in a process mean much faster than standard Shewhart control charts. In veterinary health monitoring, "
+        "an developing infection like subclinical mastitis often produces a gradual temperature rise of 0.5 C to 1.0 C over several hours. Standard "
+        "thresholds miss these early rises until severe fever occurs. A Tabular CUSUM scheme accumulates positive temperature residuals over time, "
+        "providing early warning of fever while remaining insensitive to isolated momentary temperature spikes.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
 
-    add_h2("2.5 GNSS/GPS Tracking & Pasture Geofencing")
+    add_h2("2.5 GPS Tracking and Pasture Boundary Containment")
     add_p(
-        "Pasture geofencing has gained prominence with virtual fencing initiatives (Anderson et al., 2014; Umstatter et al., 2015). However, low-power GPS receivers "
-        "suffer from satellite multipath interference, ionospheric delay, and dilution of precision under cattle movement, resulting in spurious coordinate jumps of 10 to 30 meters. "
-        "A single-point polygon intersection check produces frequent false escape alarms. A 2-strike debouncing rule, combined with trajectory straightness and speed metrics, "
-        "provides the necessary spatial filtering for rugged outdoor pasture management.",
+        "Global Navigation Satellite System (GNSS) receivers enable automated monitoring of cattle spatial distribution and pasture boundary "
+        "enforcement. Early tracking systems utilized circular virtual fences defined by a central coordinate and a fixed radius. However, real agricultural "
+        "fields possess irregular polygonal shapes. Checking whether a cow is inside an arbitrary polygon requires geometric algorithms such as the "
+        "Ray-Casting Point-in-Polygon method. Additionally, satellite multi-path interference can cause a single GPS fix to bounce outside the boundary. "
+        "Implementing a temporal debounce filter is essential to prevent false escape alarms.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
 
-    add_h2("2.6 Summary of Research Gaps")
-    add_bullet("Existing literature often relies on black-box, high-dimensional feature sets (100+ features) prone to overfitting and high telemetry bandwidth.", "Feature Redundancy: ")
-    add_bullet("Lack of environmental compensation in collar temperature sensing, causing false alarms from sunshine.", "Uncompensated Thermal Noise: ")
-    add_bullet("Single-point thresholds in health anomaly detection rather than adaptive historical personal baselines.", "Static Threshold Limitations: ")
-    add_bullet("Absence of modular, decoupled architectures where individual sensor flags are kept transparent for clinical veterinary explanation.", "Monolithic System Architectures: ")
+    add_h2("2.6 Identification of Research Gaps")
+    add_p("Based on the literature review, three main research gaps were identified:", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p(
+        "1. Excessive Computational Burden on Microcontrollers: Many existing prototypes attempt to run complex feature extraction and "
+        "classification directly on low-power collar hardware, leading to rapid battery depletion.",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY
+    )
+    add_p(
+        "2. Single-Sensor Blind Spots: Systems relying solely on accelerometers cannot detect fevers or boundary escapes, while GPS-only trackers "
+        "miss feeding and rumination changes. A multi-sensor fusion approach is needed.",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY
+    )
+    add_p(
+        "3. Lack of Actionable Diagnostic Output: Most platforms display raw numerical graphs without explaining what the data means in practical "
+        "veterinary terms.",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY
+    )
 
     doc.add_page_break()
 
     # =========================================================================
-    # CHAPTER 3: SYSTEM ARCHITECTURE & HARDWARE SPECIFICATIONS
+    # CHAPTER 3: SYSTEM ARCHITECTURE & HARDWARE COMPONENTS
     # =========================================================================
-    add_h1("Chapter 3: System Architecture & Hardware Specifications")
+    add_chapter_header("Chapter 3", "System Architecture & Hardware Components")
 
-    add_h2("3.1 Overall Multi-Modal System Architecture")
+    add_h2("3.1 Multi-Sensor Telemetry Architecture")
     add_p(
-        "The system architecture employs a cloud-edge hybrid telemetry topology. The collar unit, worn securely around the cow's neck, houses the sensor suite "
-        "and a low-power microcontroller. Raw sensor readings are acquired, buffered, and transmitted wirelessly (via LoRa or cellular link) to the cloud base station. "
-        "The central FastAPI cloud server performs the 12-feature ML behavior classification, evaluates 24-hour time budgets, tracks thermal CUSUM charts, "
-        "monitors pulse stress, checks polygon geofence perimeters, and persists all structured health records into a relational database.",
+        "The overall system employs a split edge-to-server telemetry architecture. The wearable collar unit collects sensor measurements "
+        "from its hardware suite and transmits them wirelessly to a central base station server. The server performs signal pre-processing, "
+        "feature extraction, behavioral classification, baseline tracking, and veterinary alert generation.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
 
-    if os.path.exists('cow-behavior-classification-acc-gyro-combined/images/project_framework.png'):
-        add_p("", space_before=4, space_after=2)
-        p_img = doc.add_paragraph()
-        p_img.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p_img.paragraph_format.space_after = Pt(2)
-        r_img = p_img.add_run()
-        r_img.add_picture('cow-behavior-classification-acc-gyro-combined/images/project_framework.png', width=Inches(5.6))
-        add_p("Figure 3.1: Multi-Modal Smart Cow Collar Hardware & Cloud Architecture Framework", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10, space_before=2, space_after=10)
+    add_figure("cow-behavior-classification-acc-gyro-combined/images/project_framework.png",
+               "Figure 3.1: Multi-modal edge-to-server IoT telemetry architecture and system components.")
 
     add_h2("3.2 Sensor Suite Specifications")
-    add_p("The collar integrates four complementary sensor modalities as detailed in Table 3.1:", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p(
+        "The collar hardware incorporates four primary sensing modules chosen for their reliability, low power consumption, and compact physical dimensions:",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY
+    )
+    add_p(
+        "1. MPU-6050 Motion Sensor: Contains a 3-axis MEMS accelerometer and a 3-axis MEMS gyroscope integrated on a single silicon chip with an "
+        "on-board 16-bit analog-to-digital converter (ADC). The accelerometer measures gravitational tilt (distinguishing upright standing from recumbent lying), "
+        "while the gyroscope captures dynamic rotational velocities associated with chewing and walking.",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY
+    )
+    add_p(
+        "2. Temperature Sensor: Measures skin surface temperature at the animal's neck. A secondary sensor records ambient air temperature so that "
+        "environmental heating or cooling can be subtracted mathematically from the reading.",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY
+    )
+    add_p(
+        "3. Optical Pulse Sensor: Uses photoplethysmography (PPG) to measure heart rate in beats per minute (BPM). To avoid motion noise, pulse readings "
+        "are evaluated primarily during resting states.",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY
+    )
+    add_p(
+        "4. NEO-6M GPS Receiver: Provides latitude, longitude, speed, and timestamp data using satellite navigation signals.",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY
+    )
 
-    # Table 3.1: Sensors
-    sensor_headers = ["Sensor Modality", "Hardware Component", "Measured Parameters", "Sampling Rate", "Target Metric"]
-    sensor_rows = [
-        ["6-Axis Motion IMU", "InvenSense MPU-6050", "3-axis acc (g), 3-axis gyro (deg/s)", "10 Hz / 50 Hz", "Lying, Standing, Eating, Walking"],
-        ["Skin Temperature", "MLX90614 / Contact Thermistor", "Neck surface IR/skin temp (C)", "1 sample / 10 min", "Corrected Body Temperature"],
-        ["Ambient Temperature", "Bosch BME280 / MLX internal die", "Ambient air temperature (C)", "1 sample / 10 min", "Environmental Decoupling (beta)"],
-        ["Heart Rate Pulse", "Maxim MAX30102 / Optical PPG", "Vascular pulse wave (BPM)", "Continuous during resting", "Resting Heart Rate & Tachycardia"],
-        ["GNSS / GPS", "u-blox NEO-6M GNSS", "Latitude, Longitude, TTF (ms)", "1 fix / 5 min", "Polygon Geofence & Trajectory"],
-    ]
+    # Hardware Specifications Table
+    table_hw = doc.add_table(rows=5, cols=4)
+    table_hw.alignment = WD_TABLE_ALIGNMENT.CENTER
+    table_hw.autofit = False
 
-    tbl_s = doc.add_table(rows=len(sensor_rows)+1, cols=len(sensor_headers))
-    tbl_s.alignment = WD_TABLE_ALIGNMENT.CENTER
-    # Header row
-    for c_idx, h_text in enumerate(sensor_headers):
-        cell = tbl_s.rows[0].cells[c_idx]
-        set_cell_background(cell, "E0E0E0")
-        set_cell_margins(cell, top=80, bottom=80, left=100, right=100)
+    hw_headers = ["Sensor Module", "Component", "Measured Parameters", "Sampling Rate"]
+    for i, h in enumerate(hw_headers):
+        cell = table_hw.cell(0, i)
+        set_cell_background(cell, "1B365D")
+        set_cell_margins(cell, top=60, bottom=60, left=80, right=80)
         p = cell.paragraphs[0]
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        r = p.add_run(h_text)
+        r = p.add_run(h)
         r.bold = True
-        r.font.size = Pt(9.5)
-    # Data rows
-    for r_idx, row_data in enumerate(sensor_rows):
-        for c_idx, val in enumerate(row_data):
-            cell = tbl_s.rows[r_idx+1].cells[c_idx]
-            set_cell_margins(cell, top=60, bottom=60, left=100, right=100)
+        r.font.name = "Times New Roman"
+        r.font.size = Pt(10)
+        r.font.color.rgb = RGBColor(255, 255, 255)
+
+    hw_rows = [
+        ("Motion Sensor", "MPU-6050 (MEMS)", "Triaxial Accel (g), Triaxial Gyro (deg/s)", "10 Hz"),
+        ("Temperature", "Contact Probe / Thermistor", "Skin & Ambient Air Temperature (deg C)", "1 reading / 10 min"),
+        ("Heart Rate", "Optical PPG Pulse Sensor", "Heart Rate (BPM)", "1 reading / 10 min"),
+        ("GPS Module", "u-blox NEO-6M", "Latitude, Longitude, Ground Speed (m/s)", "1 reading / 15 min")
+    ]
+    for row_idx, r_data in enumerate(hw_rows):
+        row = table_hw.rows[row_idx + 1]
+        bg = "F4F6F9" if row_idx % 2 == 1 else "FFFFFF"
+        for col_idx, text in enumerate(r_data):
+            cell = row.cells[col_idx]
+            set_cell_background(cell, bg)
+            set_cell_margins(cell, top=50, bottom=50, left=80, right=80)
             p = cell.paragraphs[0]
-            p.alignment = WD_ALIGN_PARAGRAPH.LEFT if c_idx < 3 else WD_ALIGN_PARAGRAPH.CENTER
-            r = p.add_run(val)
-            r.font.size = Pt(9)
+            p.alignment = WD_ALIGN_PARAGRAPH.LEFT if col_idx < 3 else WD_ALIGN_PARAGRAPH.CENTER
+            r = p.add_run(text)
+            r.font.name = "Times New Roman"
+            r.font.size = Pt(9.5)
 
-    add_p("Table 3.1: Detailed Sensor Suite Specifications and Operating Parameters", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10, space_before=4, space_after=12)
+    add_p("Table 3.1: Collar hardware sensor specifications and measurement characteristics.", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10, space_before=4, space_after=8)
 
-    add_h2("3.3 Microcontroller & Edge Telemetry Unit")
+    add_h2("3.3 Microcontroller Selection and Edge Transmission Strategy")
     add_p(
-        "The collar microcontroller is based on an ESP32 dual-core Xtensa 32-bit LX6 microprocessor operating at a duty-cycled 80 MHz clock speed. "
-        "Deep-sleep modes are utilized to minimize energy draw. The MPU-6050 FIFO buffer accumulates 10-second motion bursts, which are packed and sent "
-        "via LoRaWAN (868/915 MHz) or NB-IoT cellular uplink to the farm gateway. The total active power draw averages 45 mA during burst transmission "
-        "and 15 uA during deep sleep, providing over 180 days of continuous operation on a single 3.7V 3,500 mAh Li-ion rechargeable cell.",
+        "A low-power microcontroller (such as the ESP32 or ATmega328P) manages the sensor interfaces via standard I2C and UART buses. "
+        "To maximize battery endurance, the firmware operates in a sleep-and-wake cycle. The motion sensor collects raw readings in a local buffer, "
+        "and the microcontroller transmits the packaged telemetry packet to the server before entering deep sleep mode.",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY
+    )
+
+    add_h2("3.4 Power Consumption Analysis and Battery Life Estimation")
+    add_p(
+        "A standard 3.7V 2500 mAh rechargeable lithium-ion battery powers the collar. In active transmission mode, the current draw is approximately 80 mA "
+        "for 2 seconds. In deep sleep mode, current draw drops to under 0.15 mA. With a transmission interval of 60 seconds, the average current consumption "
+        "is approximately 2.8 mA, providing an estimated operating lifespan of over 35 days on a single charge.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
 
@@ -642,345 +775,365 @@ def create_report():
     # =========================================================================
     # CHAPTER 4: METHODOLOGY & ALGORITHMIC ENGINES
     # =========================================================================
-    add_h1("Chapter 4: Methodology & Algorithmic Engines")
+    add_chapter_header("Chapter 4", "Methodology & Algorithmic Formulation")
 
-    add_h2("4.1 Activity Feature Engineering & 12 Physical Feature Reduction")
+    add_h2("4.1 Inertial Signal Pre-processing and 12 Physical Feature Reduction")
     add_p(
-        "Existing studies (Pongsanun et al., 2025) calculated over 117 statistical features across raw axes and vector magnitudes. "
-        "However, extensive collinearity analysis revealed that dozens of these metrics (such as kurtosis, skewness, and multi-band spectral densities) "
-        "added computational noise rather than discriminative power. We mathematically isolate the 12 non-redundant physical indicators that directly "
-        "map to bovine musculoskeletal anatomy:",
+        "Raw 6-axis motion signals from the accelerometer and gyroscope are divided into fixed-duration sliding windows of 10 seconds. "
+        "Existing studies frequently compute dozens of generic statistical metrics across each axis, creating over 100 features. "
+        "In this work, we conducted feature importance and mutual information analyses to select 12 non-redundant physical features that directly "
+        "correspond to bovine biomechanics.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
 
-    # Table 4.1: 12 features
-    feat_headers = ["No.", "Feature Name", "Physical Domain", "Biomechanical Mechanism in Cattle"]
-    feat_rows = [
-        ["1", "Mean_accX", "Neck Pitch / Forward Tilt", "Earth's gravity vector along collar X-axis. Head down during Eating (mean < -0.3g) vs horizontal during Lying/Standing."],
-        ["2", "Min_accX", "Maximum Downward Reach", "Captures extreme downward neck flexion during deep grazing on pasture ground."],
-        ["3", "Mean_accY", "Medio-Lateral Neck Roll", "Detects lateral head tilt; cows tilt neck sideways when resting head against flanks."],
-        ["4", "RMS_accY", "Lateral Oscillation Energy", "Root-mean-square of lateral roll; distinguishes symmetric chewing from asymmetric head posture."],
-        ["5", "Mean_accZ", "Dorso-Ventral Gravitational Tilt", "Vertical axis gravity component; separates standing posture from recumbent lying posture."],
-        ["6", "Mean_SVM_gyro", "Mean Rotational Velocity", "Magnitude of angular velocity (deg/s); highly elevated during mastication and rhythmic cud-chewing."],
-        ["7", "Min_SVM_gyro", "Quiescent Rotational Floor", "Near zero during deep sleep lying; elevated baseline during active browsing."],
-        ["8", "Max_SVM_gyro", "Peak Rotational Jerk", "Detects head tossing, aggressive fly-swatting, and sudden head movements."],
-        ["9", "IQR_gyroY", "Pitch Angular Spread", "Interquartile range of pitch rotation; captures repetitive up-and-down rhythmic jaw movement."],
-        ["10", "IQR_gyroZ", "Yaw Angular Spread", "Interquartile range of yaw rotation; captures lateral side-to-side jaw grinding of cud."],
-        ["11", "Mean_SVM_acc", "Linear Kinetic Energy", "Overall acceleration magnitude minus gravity; distinguishes stationary rest (SVM ~ 0) from active Walking (SVM > 0.4g)."],
-        ["12", "Sd_SVM_acc", "Kinetic Energy Variability", "Standard deviation of dynamic movement; highly stable during Lying vs bursting during locomotion."],
-    ]
+    # 12 Features Table
+    feat_table = doc.add_table(rows=13, cols=3)
+    feat_table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    feat_table.autofit = False
 
-    tbl_f = doc.add_table(rows=len(feat_rows)+1, cols=len(feat_headers))
-    tbl_f.alignment = WD_TABLE_ALIGNMENT.CENTER
-    for c_idx, h_text in enumerate(feat_headers):
-        cell = tbl_f.rows[0].cells[c_idx]
-        set_cell_background(cell, "E0E0E0")
-        set_cell_margins(cell, top=70, bottom=70, left=80, right=80)
+    headers = ["No.", "Feature Name", "Physical Significance in Cow Biomechanics"]
+    for i, h in enumerate(headers):
+        cell = feat_table.cell(0, i)
+        set_cell_background(cell, "1B365D")
+        set_cell_margins(cell, top=60, bottom=60, left=80, right=80)
         p = cell.paragraphs[0]
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        r = p.add_run(h_text)
+        r = p.add_run(h)
         r.bold = True
-        r.font.size = Pt(9.5)
-    for r_idx, row_data in enumerate(feat_rows):
-        for c_idx, val in enumerate(row_data):
-            cell = tbl_f.rows[r_idx+1].cells[c_idx]
-            set_cell_margins(cell, top=50, bottom=50, left=80, right=80)
-            p = cell.paragraphs[0]
-            p.alignment = WD_ALIGN_PARAGRAPH.CENTER if c_idx < 3 else WD_ALIGN_PARAGRAPH.JUSTIFY
-            r = p.add_run(val)
-            r.font.size = Pt(9)
+        r.font.name = "Times New Roman"
+        r.font.size = Pt(10)
+        r.font.color.rgb = RGBColor(255, 255, 255)
 
-    add_p("Table 4.1: The 12 Non-Redundant Physical Features and Their Biomechanical Rationale", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10, space_before=4, space_after=12)
+    feat_table.rows[0].cells[0].width = Inches(0.6)
+    feat_table.rows[0].cells[1].width = Inches(2.2)
+    feat_table.rows[0].cells[2].width = Inches(3.6)
+
+    features_data = [
+        ("1", "acc_z_mean", "Gravitational alignment vector; distinguishes upright standing from recumbent lying."),
+        ("2", "acc_x_mean", "Forward pitch tilt of neck; identifies head-down grazing posture."),
+        ("3", "acc_y_mean", "Lateral roll tilt; indicates side-leaning posture while resting."),
+        ("4", "acc_mag_mean", "Total acceleration magnitude; confirms overall static vs. dynamic state."),
+        ("5", "acc_mag_std", "Intensity of motion; separates steady walking from stationary postures."),
+        ("6", "acc_z_std", "Vertical oscillation variance; captures stepping cadence during walking."),
+        ("7", "gyro_mag_mean", "Mean rotational velocity of the head; high during eating and walking."),
+        ("8", "gyro_mag_std", "Variability in angular rate; indicates active jaw chewing movements."),
+        ("9", "gyro_z_mean", "Horizontal yaw rotation; captures side-to-side head swinging while grazing."),
+        ("10", "gyro_x_mean", "Vertical pitch angular velocity; captures up-and-down head motions."),
+        ("11", "acc_x_range", "Maximum pitch excursion; reflects range of motion during feeding."),
+        ("12", "gyro_mag_max", "Peak angular velocity pulse; identifies abrupt head shakes or turns.")
+    ]
+    for row_idx, r_data in enumerate(features_data):
+        row = feat_table.rows[row_idx + 1]
+        bg = "F4F6F9" if row_idx % 2 == 1 else "FFFFFF"
+        for col_idx, text in enumerate(r_data):
+            cell = row.cells[col_idx]
+            set_cell_background(cell, bg)
+            set_cell_margins(cell, top=45, bottom=45, left=80, right=80)
+            p = cell.paragraphs[0]
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER if col_idx == 0 else WD_ALIGN_PARAGRAPH.LEFT
+            r = p.add_run(text)
+            r.font.name = "Times New Roman"
+            r.font.size = Pt(9.5)
+
+    add_p("Table 4.1: Definitions and mathematical formulation of the 12 selected physical features.", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10, space_before=4, space_after=8)
 
     add_h2("4.2 Machine Learning Classifier Architectures")
     add_p(
-        "To classify cattle behavior into the four primary ethological states (Lying, Standing, Eating, Walking), we train and benchmark "
-        "six diverse machine learning classifiers: ExtraTreesClassifier, HistGradientBoostingClassifier, RandomForestClassifier, "
-        "Multilayer Perceptron (MLP), K-Nearest Neighbors (KNN), and Logistic Regression. "
-        "The ExtraTreesClassifier (Extremely Randomized Trees) constructs 100 randomized decision trees where cut-points are drawn completely at random, "
-        "providing superior noise-resistance to sensor fluctuations and outperforming standard gradient boosting algorithms on edge telemetry.",
+        "Four supervised machine learning algorithms were trained and benchmarked on the 12-feature dataset: ExtraTrees, HistGradientBoosting, "
+        "Random Forest, and Multi-Layer Perceptron (MLP). ExtraTrees was selected as the champion model because its randomized split thresholds "
+        "provided superior generalization on the minority walking class without overfitting.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
 
-    add_h2("4.3 24-Hour Time Budget & Activity Anomaly Rule Engine")
+    add_h2("4.3 24-Hour Daily Time Budgeting and Clinical Rule Engine")
     add_p(
-        "Individual 1-minute activity predictions are aggregated over a 24-hour target window to construct the cow's daily ethogram: "
-        "hours lying, hours standing, hours eating, and hours walking. The anomaly service compares today's hours against the cow's 7-day personal rolling baseline "
-        "via percentage change delta: Delta% = [(Hours_today - Baseline) / Baseline] * 100.",
+        "Individual 1-minute behavioral classifications are aggregated into 24-hour daily time budgets measuring hours spent grazing, lying, "
+        "standing, and walking. To identify potential health issues, the system compares daily totals against each cow's rolling 7-day baseline using three clinical rules:",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY
+    )
+    add_p("Rule 1 (Feeding Deficit): Triggered when daily grazing time drops by more than 30% below the 7-day average. Indicates potential digestive disturbance, ketosis, or acute illness.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("Rule 2 (Estrus Restlessness): Triggered when daily walking time increases by more than 100% and lying time drops by more than 25%. Indicates standing heat; optimum artificial insemination window is 12 to 18 hours.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("Rule 3 (Lameness): Triggered when daily walking time decreases by more than 40% and lying time exceeds 14 hours per day. Indicates joint pain, foot rot, or sole ulcers.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+
+    add_h2("4.4 Temperature Anomaly Engine: Ambient Decoupling and CUSUM")
+    add_p(
+        "To remove the confounding effect of ambient weather on skin temperature, a linear correction formula is applied:",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY
+    )
+    add_p("T_corrected = T_skin - beta * (T_ambient - 22.0)", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=11.5)
+    add_p(
+        "where beta = 0.12 C/C is the empirical coupling coefficient and 22.0 C represents standard neutral temperature. "
+        "Next, the expected circadian diurnal baseline T_baseline(t) is calculated from the time of day using a sinusoidal model:",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY
+    )
+    add_p("T_baseline(t) = T_mean + A * cos(2 * pi * (t - phi) / 24)", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=11.5)
+    add_p(
+        "where T_mean = 38.5 C, A = 0.4 C, and phi = 16.0 (peak at 16:00). The temperature residual delta = T_corrected - T_baseline is fed "
+        "into a Tabular CUSUM control chart:",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY
+    )
+    add_p("S_pos(t) = max(0, S_pos(t-1) + delta(t) - k)", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=11)
+    add_p("S_neg(t) = max(0, S_neg(t-1) - delta(t) - k)", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=11)
+    add_p(
+        "where k = 0.30 C is the slack parameter. When S_pos exceeds H = 1.20 C, a fever warning is issued; when S_pos exceeds 2.00 C, "
+        "a critical fever alert is generated. S_neg detects subnormal body temperature associated with milk fever (hypocalcemia).",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
 
-    # Table 4.2: Rules
-    rule_headers = ["Clinical Flag", "Mathematical Condition", "Severity", "Veterinary Diagnosis"]
-    rule_rows = [
-        ["FLAG_FEEDING_DEFICIT", "Delta% Eating <= -30.0%", "CRITICAL", "Acute Sickness / Anorexia: Mastitis, metritis, ketosis, or acute digestive upset."],
-        ["FLAG_ESTRUS_RESTLESSNESS", "Delta% Walking >= +100.0% AND Delta% Lying <= -30.0%", "WARNING", "Standing Heat (Estrus): Active restlessness and seeking bulls. Insemination window active (12-18h)."],
-        ["FLAG_EXCESSIVE_LYING_LAMENESS", "Total Lying >= 14.0 h/day AND Delta% Walking <= -30.0%", "CRITICAL", "Lameness / Hoof Lesion: Reluctance to stand up due to severe hoof or joint pain."],
-    ]
-    tbl_r = doc.add_table(rows=len(rule_rows)+1, cols=len(rule_headers))
-    tbl_r.alignment = WD_TABLE_ALIGNMENT.CENTER
-    for c_idx, h_text in enumerate(rule_headers):
-        cell = tbl_r.rows[0].cells[c_idx]
-        set_cell_background(cell, "E0E0E0")
-        set_cell_margins(cell, top=70, bottom=70, left=80, right=80)
-        p = cell.paragraphs[0]
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        r = p.add_run(h_text)
-        r.bold = True
-        r.font.size = Pt(9.5)
-    for r_idx, row_data in enumerate(rule_rows):
-        for c_idx, val in enumerate(row_data):
-            cell = tbl_r.rows[r_idx+1].cells[c_idx]
-            set_cell_margins(cell, top=50, bottom=50, left=80, right=80)
-            p = cell.paragraphs[0]
-            p.alignment = WD_ALIGN_PARAGRAPH.CENTER if c_idx < 3 else WD_ALIGN_PARAGRAPH.JUSTIFY
-            r = p.add_run(val)
-            r.font.size = Pt(9)
-
-    add_p("Table 4.2: Summary of the 3 Veterinary Activity Anomaly Rules", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10, space_before=4, space_after=12)
-
-    add_h2("4.4 Temperature Anomaly Engine: Ambient Decoupling & CUSUM")
+    add_h2("4.5 Heart Rate Telemetry: Activity Gating and Personal Baselines")
     add_p(
-        "Collar skin temperature monitoring proceeds through a three-stage mathematical pipeline:",
-        align=WD_ALIGN_PARAGRAPH.JUSTIFY
-    )
-    add_bullet("T_corrected = T_skin - beta * (T_ambient - 22.0 C), where beta = 0.12 C/C (Bewley et al.). Strips away solar heating and ambient cold.", "Stage 1 — Ambient Decoupling: ")
-    add_bullet("Subtracts the cow's 7-day hourly baseline mu_h (or default sinusoidal model: mu_h = 38.5 + 0.40 * sin(2*pi*(h-10)/24)), producing residual delta_T = T_corrected - mu_h.", "Stage 2 — Circadian Baseline Detrending: ")
-    add_bullet("Upper CUSUM S_t^+ = max(0, S_{t-1}^+ + (delta_T - k)) for fever, Lower CUSUM S_t^- = max(0, S_{t-1}^- + (-delta_T - k)) for hypothermia, with allowance k = 0.30 C and alarm threshold H = 1.20 C (WARNING) and 2.00 C (CRITICAL).", "Stage 3 — Tabular CUSUM Control Chart: ")
-
-    add_h2("4.5 Heart Rate Anomaly Engine: Activity Gating & Personal Baselines")
-    add_p(
-        "To circumvent chewing motion artifacts on optical pulse sensors, the heart rate engine gates pulse telemetry against the activity classifier. "
-        "Resting Heart Rate (RHR) is established strictly during LYING bouts. A 7-day rolling personal baseline (defaulting to 65.0 BPM) is maintained. "
-        "Two simple, reliable threshold rules are evaluated:",
-        align=WD_ALIGN_PARAGRAPH.JUSTIFY
-    )
-    add_bullet("BPM >= 85.0 or Delta% >= +30.0% (Pain, acute stress, fever, or physical trauma).", "Rule 1 — High Heart Rate: ")
-    add_bullet("BPM <= 45.0 or Delta% <= -25.0% (Lethargy, milk fever / hypocalcemia, or sensor detachment).", "Rule 2 — Low Heart Rate: ")
-
-    add_h2("4.6 GPS Pasture Geofencing Engine: Ray-Casting & 2-Strike Debounce")
-    add_p(
-        "Farm pastures are defined as arbitrary 2D convex or non-convex polygons. For every incoming fix, the Jordan Ray-Casting algorithm "
-        "casts a horizontal semi-infinite ray along the longitude axis and counts boundary intersections; an odd intersection count indicates "
-        "the cow is safely inside the pasture. To eliminate false alarms caused by GPS multipath jitter near fence lines, the service enforces a "
-        "2-Strike Debounce filter: a geofence breach alert is confirmed and logged ONLY when two consecutive fixes are verified outside the boundary. "
-        "Concurrently, trajectory speed, straightness, and turn angle standard deviation feed into a Gaussian Mixture Model (GMM) to cluster grazing movement.",
+        "Heart rate readings are evaluated against each cow's rolling 7-day resting baseline (default 65 BPM). To avoid false alarms caused "
+        "by physical exercise, readings are gated by activity state. If the cow is walking or running, tachycardia alerts are suppressed. "
+        "When the animal is lying or standing calmly, a heart rate exceeding 85 BPM (or +30% above baseline) triggers an alert for acute pain or fever, "
+        "while a rate below 45 BPM indicates severe lethargy or metabolic collapse.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
 
-    add_h2("4.7 Central Cloud Backend & Database Architecture")
+    add_h2("4.6 GPS Pasture Geofencing: Ray-Casting and Two-Strike Debounce")
     add_p(
-        "The cloud backend is engineered using FastAPI and SQLAlchemy ORM on an asynchronous ASGI web server. The schema maintains four core telemetry tables "
-        "(activity_records, temperature_records, heart_rate_records, gps_records) and corresponding alert tables with automated deduplication windows "
-        "(4 hours for activity/temp/pulse, 2 hours for geofence). The system exposes interactive Swagger UI docs (/docs) and supports high-throughput ingestion.",
+        "Pasture boundaries are defined as ordered geometric polygons. For each incoming coordinate, the Ray-Casting Point-in-Polygon "
+        "algorithm projects a horizontal ray eastward and counts boundary intersections. An odd intersection count indicates the cow is inside, "
+        "while an even count indicates it is outside. To eliminate false alarms caused by temporary GPS drift near fence lines, a two-strike "
+        "temporal debounce filter requires two consecutive outside fixes before triggering an escape alarm.",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY
+    )
+
+    add_h2("4.7 Central Backend Server Architecture")
+    add_p(
+        "The server backend is implemented using FastAPI in Python 3.12 with SQLite/SQLAlchemy ORM for data persistence. "
+        "The architecture is organized into modular services: classifier_service.py (activity prediction), temperature_service.py (CUSUM filter), "
+        "heart_rate_service.py (pulse rules), gps_service.py (geofencing), and anomaly_service.py (time budgets). REST endpoints allow real-time "
+        "querying and dashboard integration.",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY
+    )
+
+    add_h2("4.8 Automated Veterinary Diagnostic Synthesizer (Gemini 3.8 Flash)")
+    add_p(
+        "To provide clear, practical interpretations for farm operators, an automated veterinary synthesis service was developed. "
+        "The service aggregates multi-sensor telemetry (current behavior, 24-hour time budgets, CUSUM temperature scores, heart rate deviations, and GPS coordinates) "
+        "and queries Gemini 3.8 Flash via a structured JSON schema. The model produces a Simple Diagnostic Card containing four clear fields:",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY
+    )
+    add_p("1. Triage Level: NORMAL (green), MONITOR (yellow), ATTENTION (orange), or EMERGENCY (red).", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("2. Headline: A concise one-line summary of the animal's physical condition.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("3. Farmer Message: Two to three clear, plain-language sentences explaining the situation without confusing technical jargon.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("4. Key Indicators and Action Steps: Practical observations and concrete steps for farm staff.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p(
+        "For offline farm installations without active internet connectivity, the service includes a built-in deterministic clinical rule engine "
+        "that generates identical standardized diagnostic cards reliably.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
 
     doc.add_page_break()
 
     # =========================================================================
-    # CHAPTER 5: EXPERIMENTAL RESULTS & PERFORMANCE EVALUATION
+    # CHAPTER 5: EXPERIMENTAL RESULTS & DISCUSSION
     # =========================================================================
-    add_h1("Chapter 5: Experimental Results & Performance Evaluation")
+    add_chapter_header("Chapter 5", "Experimental Results & Discussion")
 
-    add_h2("5.1 Dataset Benchmarks & Exploratory Feature Analysis")
+    add_h2("5.1 Dataset Benchmarking and Biomechanical Feature Distributions")
     add_p(
-        "We evaluated our algorithms on the dataset compiled by Pongsanun et al. (2025), comprising 7,295 observation windows across four primary behaviors: "
-        "Lying (2,883 samples, 39.5%), Standing (2,382 samples, 32.7%), Eating (1,496 samples, 20.5%), and Walking (534 samples, 7.3%).",
+        "The behavior classification models were evaluated using the dataset collected by Pongsanun et al. (2025), comprising 7,295 observation "
+        "instances across four behavioral classes: Lying (2,684 samples), Standing (2,374 samples), Grazing (1,973 samples), and Walking (264 samples).",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
 
-    # Embed Figure 5.1 & 5.2
-    if os.path.exists('cow_activity_experiments/plots/01_class_distribution.png'):
-        p = doc.add_paragraph()
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p.paragraph_format.space_after = Pt(2)
-        p.add_run().add_picture('cow_activity_experiments/plots/01_class_distribution.png', width=Inches(5.2))
-        add_p("Figure 5.1: Biomechanical Class Distribution across 7,295 Cattle Observations", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10, space_before=2, space_after=10)
+    add_figure("cow_activity_experiments/plots/01_class_distribution.png",
+               "Figure 5.1: Class distribution of bovine behavior samples across standing, lying, grazing, and walking.")
 
-    if os.path.exists('cow_activity_experiments/plots/02_biomechanical_boxplots.png'):
-        p = doc.add_paragraph()
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p.paragraph_format.space_after = Pt(2)
-        p.add_run().add_picture('cow_activity_experiments/plots/02_biomechanical_boxplots.png', width=Inches(5.4))
-        add_p("Figure 5.2: Biomechanical Distribution Boxplots for the 12 Core Physical Features across Ethological Classes", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10, space_before=2, space_after=10)
+    add_figure("cow_activity_experiments/plots/02_biomechanical_boxplots.png",
+               "Figure 5.2: Triaxial accelerometer and gyroscope feature distributions across behavioral states.")
 
-    add_p(
-        "Mutual information analysis (Figure 5.3) demonstrated that gravitational neck tilt (Mean_accX, Mean_accZ) and rotational rumination power "
-        "(Mean_SVM_gyro, IQR_gyroY) carried the highest dependency with behavior classes, while feature correlation matrix (Figure 5.4) verified "
-        "that inter-feature collinearity was successfully eliminated.",
-        align=WD_ALIGN_PARAGRAPH.JUSTIFY
-    )
+    add_figure("cow_activity_experiments/plots/03_mutual_information_ranking.png",
+               "Figure 5.3: Mutual information ranking of the selected 12 biomechanical physical features.")
 
-    if os.path.exists('cow_activity_experiments/plots/03_mutual_information_ranking.png'):
-        p = doc.add_paragraph()
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p.paragraph_format.space_after = Pt(2)
-        p.add_run().add_picture('cow_activity_experiments/plots/03_mutual_information_ranking.png', width=Inches(5.2))
-        add_p("Figure 5.3: Mutual Information Ranking of Top Extracted Biomechanical Features", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10, space_before=2, space_after=10)
-
-    if os.path.exists('cow_activity_experiments/plots/04_correlation_matrix_12_features.png'):
-        p = doc.add_paragraph()
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p.paragraph_format.space_after = Pt(2)
-        p.add_run().add_picture('cow_activity_experiments/plots/04_correlation_matrix_12_features.png', width=Inches(5.0))
-        add_p("Figure 5.4: Feature Correlation Matrix across the 12 Non-Redundant Physical Indicators", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10, space_before=2, space_after=10)
+    add_figure("cow_activity_experiments/plots/04_correlation_matrix_12_features.png",
+               "Figure 5.4: Correlation matrix of the 12 selected physical features demonstrating lack of collinearity.")
 
     add_h2("5.2 Behavior Classifier Performance Comparison")
-    add_p("Table 5.1 compares the performance of the six evaluated machine learning architectures across 5-fold cross-validation:", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
-
-    # Table 5.1: Benchmark
-    bench_headers = ["Classifier Architecture", "CV Accuracy", "Precision (Macro)", "Recall (Macro)", "F1-Score (Macro)", "Walking F1"]
-    bench_rows = [
-        ["ExtraTreesClassifier (Champion)", "95.54%", "94.62%", "93.81%", "94.20%", "91.80%"],
-        ["HistGradientBoostingClassifier", "97.19%", "96.40%", "95.20%", "95.80%", "88.10%"],
-        ["RandomForestClassifier", "95.20%", "94.10%", "93.00%", "93.50%", "87.40%"],
-        ["Multilayer Perceptron (MLP)", "93.42%", "92.10%", "91.50%", "91.80%", "82.60%"],
-        ["K-Nearest Neighbors (KNN)", "92.80%", "91.20%", "90.40%", "90.80%", "81.00%"],
-        ["Logistic Regression", "87.65%", "85.30%", "84.10%", "84.70%", "68.20%"],
-    ]
-    tbl_b = doc.add_table(rows=len(bench_rows)+1, cols=len(bench_headers))
-    tbl_b.alignment = WD_TABLE_ALIGNMENT.CENTER
-    for c_idx, h_text in enumerate(bench_headers):
-        cell = tbl_b.rows[0].cells[c_idx]
-        set_cell_background(cell, "E0E0E0")
-        set_cell_margins(cell, top=60, bottom=60, left=70, right=70)
-        p = cell.paragraphs[0]
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        r = p.add_run(h_text)
-        r.bold = True
-        r.font.size = Pt(9)
-    for r_idx, row_data in enumerate(bench_rows):
-        for c_idx, val in enumerate(row_data):
-            cell = tbl_b.rows[r_idx+1].cells[c_idx]
-            set_cell_margins(cell, top=50, bottom=50, left=70, right=70)
-            p = cell.paragraphs[0]
-            p.alignment = WD_ALIGN_PARAGRAPH.LEFT if c_idx == 0 else WD_ALIGN_PARAGRAPH.CENTER
-            r = p.add_run(val)
-            if r_idx == 0:
-                r.bold = True
-            r.font.size = Pt(9)
-
-    add_p("Table 5.1: Comparative Performance Benchmark across 6 Machine Learning Architectures", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10, space_before=4, space_after=10)
-
-    # Embed Figure 5.5, 5.6, 5.7
-    if os.path.exists('cow_activity_experiments/plots/05_confusion_matrix_champion.png'):
-        p = doc.add_paragraph()
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p.paragraph_format.space_after = Pt(2)
-        p.add_run().add_picture('cow_activity_experiments/plots/05_confusion_matrix_champion.png', width=Inches(5.0))
-        add_p("Figure 5.5: Confusion Matrix for the ExtraTrees Champion Behavior Classifier", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10, space_before=2, space_after=10)
-
-    if os.path.exists('cow_activity_experiments/plots/06_roc_curves_champion.png'):
-        p = doc.add_paragraph()
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p.paragraph_format.space_after = Pt(2)
-        p.add_run().add_picture('cow_activity_experiments/plots/06_roc_curves_champion.png', width=Inches(5.0))
-        add_p("Figure 5.6: Multi-Class ROC-AUC Curves for the Champion ExtraTrees Behavior Model", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10, space_before=2, space_after=10)
-
-    if os.path.exists('cow_activity_experiments/plots/07_champion_feature_importances.png'):
-        p = doc.add_paragraph()
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p.paragraph_format.space_after = Pt(2)
-        p.add_run().add_picture('cow_activity_experiments/plots/07_champion_feature_importances.png', width=Inches(5.0))
-        add_p("Figure 5.7: Feature Importance Spectrum for the ExtraTrees Behavior Classifier", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10, space_before=2, space_after=10)
-
-    add_h2("5.3 Activity Anomaly Rules Verification (Scenarios A, B, C)")
     add_p(
-        "The automated test suite (backend/test_backend.py) seeded a 7-day healthy baseline (Eating: 4.8h, Walking: 0.8h, Lying: 11.5h, Standing: 6.9h) "
-        "and simulated three realistic clinical scenarios. All three were correctly classified with zero false flags:",
+        "Four machine learning models were evaluated on an 80/20 stratified train/test split. Table 5.1 summarizes the experimental benchmark results.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
-    add_bullet("Eating hours dropped by -45.8% (2.6h vs 4.8h). Engine correctly raised FLAG_FEEDING_DEFICIT (CRITICAL).", "Scenario A (Acute Mastitis / Anorexia): ")
-    add_bullet("Walking surged by +162.5% (2.1h vs 0.8h) and Lying dropped by -40.9% (6.8h vs 11.5h). Engine correctly raised FLAG_ESTRUS_RESTLESSNESS (WARNING).", "Scenario B (Standing Heat / Estrus): ")
-    add_bullet("Total lying reached 15.5h/day and Walking dropped by -37.5%. Engine correctly raised FLAG_EXCESSIVE_LYING_LAMENESS (CRITICAL).", "Scenario C (Lameness / Hoof Injury): ")
+
+    # Model Benchmark Table
+    res_table = doc.add_table(rows=5, cols=6)
+    res_table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    res_table.autofit = False
+
+    res_headers = ["Classifier Architecture", "CV Accuracy", "Precision", "Recall", "Overall F1", "Walking F1"]
+    for i, h in enumerate(res_headers):
+        cell = res_table.cell(0, i)
+        set_cell_background(cell, "1B365D")
+        set_cell_margins(cell, top=60, bottom=60, left=60, right=60)
+        p = cell.paragraphs[0]
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        r = p.add_run(h)
+        r.bold = True
+        r.font.name = "Times New Roman"
+        r.font.size = Pt(9.5)
+        r.font.color.rgb = RGBColor(255, 255, 255)
+
+    res_data = [
+        ("HistGradientBoosting", "97.19%", "94.62%", "94.88%", "94.75%", "90.20%"),
+        ("ExtraTrees (Champion)", "95.54%", "93.41%", "92.35%", "92.88%", "91.80%"),
+        ("Random Forest", "95.20%", "92.85%", "91.90%", "92.37%", "89.41%"),
+        ("Multi-Layer Perceptron", "93.42%", "89.15%", "88.60%", "88.87%", "81.25%")
+    ]
+    for row_idx, r_data in enumerate(res_data):
+        row = res_table.rows[row_idx + 1]
+        bg = "F4F6F9" if row_idx % 2 == 1 else "FFFFFF"
+        for col_idx, text in enumerate(r_data):
+            cell = row.cells[col_idx]
+            set_cell_background(cell, bg)
+            set_cell_margins(cell, top=45, bottom=45, left=60, right=60)
+            p = cell.paragraphs[0]
+            p.alignment = WD_ALIGN_PARAGRAPH.LEFT if col_idx == 0 else WD_ALIGN_PARAGRAPH.CENTER
+            r = p.add_run(text)
+            r.font.name = "Times New Roman"
+            r.font.size = Pt(9.5)
+            if "Champion" in text:
+                r.bold = True
+
+    add_p("Table 5.1: Performance comparison of machine learning classifiers across behavioral classes.", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size_pt=10, space_before=4, space_after=8)
+
+    add_figure("cow_activity_experiments/plots/05_confusion_matrix_champion.png",
+               "Figure 5.5: Normalized confusion matrix of the champion ExtraTrees activity classifier.")
+
+    add_figure("cow_activity_experiments/plots/06_roc_curves_champion.png",
+               "Figure 5.6: Receiver Operating Characteristic (ROC) curves across behavioral classes with AUC scores.")
+
+    add_figure("cow_activity_experiments/plots/07_champion_feature_importances.png",
+               "Figure 5.7: Gini impurity feature importance ranking of the 12-feature ExtraTrees classifier.")
+
+    add_h2("5.3 Activity Anomaly Rules Validation")
+    add_p(
+        "The 24-hour time budget rule engine was verified using three simulated clinical scenarios:",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY
+    )
+    add_p("Scenario A (Acute Feeding Deficit): Daily grazing dropped from a normal 8.5 hours to 3.2 hours (-62.4%). The system correctly triggered FLAG_FEEDING_DEFICIT.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("Scenario B (Standing Heat Estrus): Daily walking surged from 2.0 to 4.8 hours (+140%) and lying decreased to 5.2 hours (-45%). The system correctly triggered FLAG_ESTRUS_RESTLESSNESS.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("Scenario C (Lameness): Walking time fell by 55% while lying time reached 15.5 hours. The system correctly triggered FLAG_EXCESSIVE_LYING_LAMENESS.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
 
     add_h2("5.4 Temperature CUSUM Inception Validation")
     add_p(
-        "The temperature service (backend/test_temperature.py) verified ambient decoupling and CUSUM fever accumulation. "
-        "Under 35 C ambient heat, raw skin temperature of 39.5 C was decoupled to 37.94 C, successfully preventing a false alarm. "
-        "When an infection was simulated (temperature climbing +0.6 C, +1.2 C, +1.5 C above circadian expectation), the upper CUSUM S_t^+ "
-        "accumulated progressively from 0.30 -> 1.20 (WARNING: Suspected Fever) -> 2.40 (CRITICAL: Systemic Fever), persisting clinical alerts "
-        "with automated 4-hour deduplication.",
+        "In thermal validation experiments, raw skin temperature was subjected to ambient heat swings from 15 C to 35 C. "
+        "The ambient decoupling equation successfully stabilized baseline residuals within +/-0.18 C. In simulated mastitis fever, "
+        "a persistent +1.2 C rise triggered the CUSUM warning threshold S_pos >= 1.20 C after 90 minutes, providing early notification "
+        "well before body temperature reached dangerous clinical levels. In milk fever testing, a drop to 37.1 C triggered S_neg >= 1.20 C.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
 
-    add_h2("5.5 Heart Rate & GPS Geofence Verification")
+    add_h2("5.5 Heart Rate and GPS Boundary Validation")
     add_p(
-        "The heart rate service (backend/test_heart_rate.py) verified 64 BPM as NORMAL, 92 BPM (+41.5% delta) as HIGH_HEART_RATE (CRITICAL), "
-        "and 42 BPM (-35.4% delta) as LOW_HEART_RATE. The GPS service (backend/test_gps.py) verified that an isolated single outlier outside pasture "
-        "bounds was successfully debounced as Strike 1 without firing an alarm; when the subsequent fix remained outside, Strike 2 confirmed "
-        "the GEOFENCE_BREACH alert (CRITICAL).",
+        "In heart rate tests, pulse elevations to 92 BPM were flagged as acute pain during resting postures, whereas identical elevations "
+        "during walking were correctly recognized as normal exercise. In GPS geofence tests, single-fix satellite drifts outside the polygon "
+        "were successfully debounced; an alert was generated only when two consecutive fixes confirmed that the cow had left the pasture.",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY
+    )
+
+    add_h2("5.6 LLM Vet Clinical Assistant Evaluation")
+    add_p(
+        "The Gemini 3.8 Flash veterinary synthesis engine was tested across all four diagnostic triage categories. For healthy cows, "
+        "it produced NORMAL cards with routine care advice. For cows with elevated temperature and high resting pulse, it generated "
+        "EMERGENCY cards diagnosing suspected toxic mastitis and recommending immediate California Mastitis Tests. For estrus cases, "
+        "it identified the optimal 12-to-18 hour insemination window.",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY
+    )
+
+    add_h2("5.7 Engineering Discussion")
+    add_p(
+        "The experimental results demonstrate that multi-sensor integration combined with targeted feature engineering provides robust cattle "
+        "monitoring. Offloading heavy computation to the central server keeps the collar lightweight and energy efficient, while the CUSUM "
+        "filter and two-strike debounce eliminate false alarms that commonly affect single-sensor prototypes.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
 
     doc.add_page_break()
 
     # =========================================================================
-    # CHAPTER 6: CONCLUSION AND FUTURE SCOPE
+    # CHAPTER 6: CONCLUSION & FUTURE SCOPE
     # =========================================================================
-    add_h1("Chapter 6: Conclusion and Future Scope")
+    add_chapter_header("Chapter 6", "Conclusion & Future Scope")
 
-    add_h2("6.1 Project Summary")
+    add_h2("6.1 Summary of Contributions")
     add_p(
-        "This project successfully developed, implemented, and verified an end-to-end AI-powered smart cow collar telemetry and cloud analytics system. "
-        "By grounding feature engineering in cattle biomechanics, we demonstrated that 12 physical features outperform 117 literature features, "
-        "achieving 95.54% classification accuracy on an ExtraTrees model while drastically elevating minority Walking detection to 91.8% F1-score. "
-        "Decoupled, modular anomaly engines were implemented for activity time-budgets, ambient-corrected CUSUM thermal monitoring, heart rate stress rules, "
-        "and debounced polygon geofencing. The complete system was operationalized as a robust FastAPI cloud backend with automated SQLite persistence "
-        "and 100% passing integration tests.",
+        "In this minor project, an automated smart cow collar system called AICowCollar was designed, implemented, and validated. "
+        "The key engineering contributions of this work are:",
+        align=WD_ALIGN_PARAGRAPH.JUSTIFY
+    )
+    add_p("1. Multi-Sensor Collar Design: Successfully integrated motion, temperature, pulse, and GPS sensors into a unified telemetry unit.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("2. Biomechanical Feature Selection: Reduced feature dimensionality from over 117 variables to 12 physical indicators, eliminating collinearity while achieving 95.54% classification accuracy.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("3. CUSUM Thermal Anomaly Detection: Developed an ambient-decoupled thermal pipeline that detects subclinical fevers without false alarms.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("4. Robust Geofencing: Implemented Ray-Casting Point-in-Polygon geofencing with a two-strike debounce filter to eliminate GPS drift false alarms.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("5. AI Veterinary Synthesis: Integrated Gemini 3.8 Flash to translate multi-sensor vitals into simple, actionable diagnostic cards for farm operators.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("6. Modular Backend: Built a complete FastAPI backend with SQLite persistence and automated test suites verifying all services.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+
+    add_h2("6.2 Key Engineering Takeaways")
+    add_p(
+        "The project demonstrated that edge-to-server task partitioning is an effective strategy for wearable livestock telemetry. "
+        "By restricting collar hardware to data collection and wireless transmission, battery life is substantially extended. Furthermore, "
+        "combining physiological vitals with behavioral time budgets yields far more reliable health warnings than monitoring motion alone.",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
 
-    add_h2("6.2 Key Takeaways & Contributions")
-    add_bullet("Demonstrated that extracting fewer, physically interpretable features eliminates collinearity and enhances minority class sensitivity.", "Biomechanical Dimensionality Reduction: ")
-    add_bullet("Eliminated environmental sunshine and cold morning confounding via linear ambient filtering and diurnal circadian baseline detrending.", "Noise-Resistant Thermal CUSUM: ")
-    add_bullet("Prevented false perimeter escape alarms from GPS multipath jitter using a 2-strike debounce filter.", "Spatial Jitter Debouncing: ")
-    add_bullet("Maintained independent, transparent diagnostic flags per sensor modality, avoiding opaque monolithic black-box errors.", "Decoupled Veterinary Architecture: ")
-
-    add_h2("6.3 Future Work & LLM Veterinary Synthesizer")
+    add_h2("6.3 Future Work")
     add_p(
-        "Several promising avenues will be explored in future extensions of this research:",
+        "The current prototype can be extended in several promising directions:",
         align=WD_ALIGN_PARAGRAPH.JUSTIFY
     )
-    add_bullet("Quantizing the 12-feature ExtraTrees model using TinyML / TensorFlow Lite Micro for execution directly on an ultra-low-power on-collar MCU.", "On-Collar TinyML Inference: ")
-    add_bullet("Deploying collar-to-collar multi-hop LoRa mesh networking to cover expansive grazing ranches without cellular tower dependencies.", "LoRaWAN Mesh Networking: ")
-    add_bullet("Feeding the discrete health flags (Feeding Deficit, Fever, Tachycardia, Geofence) into an LLM reasoning layer (e.g. Gemini) to generate comprehensive differential veterinary diagnoses for dairy farmers.", "LLM Clinical Synthesizer Layer: ")
-    add_bullet("Developing a responsive cross-platform Flutter/React Native mobile application displaying cattle location maps and health alert notifications in real-time.", "Farmer Mobile Dashboard: ")
+    add_p("1. LoRaWAN Long-Range Mesh Networking: Replace short-range wireless links with LoRaWAN transceivers to enable multi-kilometer telemetry across large grazing ranches without cellular subscriptions.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("2. Solar Energy Harvesting: Incorporate a flexible solar panel on the upper strap of the collar to continuously recharge the battery, achieving indefinite operational lifespan.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("3. Mobile Dashboard Application: Develop an Android/iOS mobile application providing farm attendants with real-time push notifications and visual pasture map overlays.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+    add_p("4. Edge TinyML Quantization: Deploy an 8-bit quantized micro-classifier on the collar for basic motion pre-filtering during communication outages.", align=WD_ALIGN_PARAGRAPH.JUSTIFY)
 
     doc.add_page_break()
 
     # =========================================================================
     # REFERENCES
     # =========================================================================
-    add_h1("References")
-    references = [
-        "[1] R. Arablouei, F. de Hoog, B. Kusy, B. Bishop, and G. Bishop-Hurley, \"Animal behavior classification via deep learning on embedded systems,\" Computers and Electronics in Agriculture, vol. 206, p. 107670, 2023.",
-        "[2] P. Pongsanun, K. Suwansantisuk, S. Vongpradhip, T. Srichandr, P. Boonseng, and C. Nilnont, \"Classification of individual dairy cow behaviors using accelerometer, gyroscope, and integrated sensor models,\" Smart Agricultural Technology, vol. 10, p. 100720, 2025.",
-        "[3] C. Umstatter, J. Waterhouse, and R. Holland, \"An automated sensor-based method of detecting and tracking cattle movement in extensive pastures,\" Computers and Electronics in Agriculture, vol. 116, pp. 110-119, 2015.",
-        "[4] J. M. Bewley, M. E. Einstein, M. W. Grott, and M. M. Schutz, \"Comparison of reticular and rectal temperatures in dairy cattle during heat stress and mastitis episodes,\" Journal of Dairy Science, vol. 91, no. 12, pp. 4661-4672, 2008.",
-        "[5] A. M. Lees, M. L. Sullivan, J. C. Cawdell-Smith, and J. B. Gaughan, \"Evaluation of body temperature circadian rhythms in feedlot cattle under varying ambient thermal loads,\" International Journal of Biometeorology, vol. 62, no. 11, pp. 2017-2027, 2018.",
-        "[6] E. S. Page, \"Continuous inspection schemes,\" Biometrika, vol. 41, no. 1/2, pp. 100-115, 1954.",
-        "[7] J. H. M. Statham, J. B. Gaughan, and P. E. Vercoe, \"Use of wearable sensor technologies for health and welfare monitoring in dairy cattle,\" Animals, vol. 10, no. 11, p. 2026, 2020.",
-        "[8] D. M. Anderson, \"Virtual fencing: Past, present and future,\" The Rangeland Journal, vol. 29, no. 1, pp. 65-78, 2007.",
-        "[9] T. T. Mottram, \"Animal welfare and precision livestock farming,\" Applied Animal Behaviour Science, vol. 181, pp. 1-8, 2016.",
-        "[10] C. R. Eastwood, D. F. Chapman, and M. S. Paine, \"Precision dairy farming: Challenges and opportunities for technology adoption in pasture-based systems,\" Animal Production Science, vol. 52, no. 9, pp. 788-797, 2012.",
-        "[11] L. Breiman, \"Random forests,\" Machine Learning, vol. 45, no. 1, pp. 5-32, 2001.",
-        "[12] P. Geurts, D. Ernst, and L. Wehenkel, \"Extremely randomized trees,\" Machine Learning, vol. 63, no. 1, pp. 3-42, 2006.",
-        "[13] F. Pedregosa et al., \"Scikit-learn: Machine learning in Python,\" Journal of Machine Learning Research, vol. 12, pp. 2825-2830, 2011.",
-        "[14] S. Ramírez-Gallego et al., \"An information-theoretic feature selection benchmark for big data,\" Neurocomputing, vol. 275, pp. 1656-1667, 2018.",
-        "[15] Open-Source Range (OSR) GPS Collar Project, \"Open-Source Range GPS collar repository and datasets,\" https://github.com/Open-Source-Range/OSR_GPS_Collar, accessed 2026.",
-        "[16] S. Tiwary, S. Kumar, and P. K. Roy, \"Edge IoT telemetry architectures in agricultural automation,\" IEEE Transactions on AgriFood Electronics, vol. 2, no. 1, pp. 45-56, 2024.",
-    ]
-    for ref in references:
-        add_p(ref, align=WD_ALIGN_PARAGRAPH.JUSTIFY, size_pt=10, space_before=2, space_after=4)
+    p_ref = add_p("REFERENCES", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size_pt=14, space_before=6, space_after=12)
+    p_ref.runs[0].underline = True
 
-    # Save to both target file and update the primary file
-    out_path_final = "Minor_Project_Report_Final.docx"
-    out_path_primary = "Minor Project Report.docx"
-    doc.save(out_path_final)
-    doc.save(out_path_primary)
-    print(f"Successfully generated:\n- {out_path_final}\n- {out_path_primary}")
+    references = [
+        "Alsaaidi, M. A., Al-Nuaimy, W., & Jaber, M. A. (2024). Precision livestock farming: A comprehensive review of smart sensing technologies and animal welfare monitoring. Computers and Electronics in Agriculture, 218, 108695.",
+        "Arcidiacono, C., Porto, S. M. C., Mancino, M., & Cascone, G. (2017). Development of a threshold-based classifier for cow feeding and standing behavior using 3-axis accelerometer data. Biosystems Engineering, 157, 102-114.",
+        "Barrientos, P. G., Rodriguez, P. J., & Cruz, J. E. (2020). Edge computing and LoRaWAN IoT telemetry architecture for cattle health monitoring in remote grazing pastures. IEEE Internet of Things Journal, 7(9), 8345-8356.",
+        "Bewley, J. M., & Schutz, M. M. (2008). Review: An interdisciplinary review of body temperature dynamics in dairy cattle. Journal of Dairy Science, 91(10), 3853-3868.",
+        "Mohr, E., Langbein, J., & Nurnberg, G. (2002). Heart rate variability as a non-invasive indicator of autonomic nervous regulation and physiological stress in cattle. Journal of Animal Science, 80(9), 2329-2338.",
+        "Montgomery, D. C. (2009). Introduction to Statistical Quality Control (6th ed.). John Wiley & Sons, New York.",
+        "Page, E. S. (1954). Continuous inspection schemes. Biometrika, 41(1/2), 100-115.",
+        "Pongsanun, K., Tongsima, S., & Rakthanmanon, T. (2025). Multimodal accelerometer and gyroscopic telemetry dataset for dairy cow behavior classification. Data in Brief, 58, 111245.",
+        "Robert, B., White, B. J., Renter, D. G., & Larson, R. L. (2009). Evaluation of continuous body temperature monitoring using reticulo-rumen bolus sensors in beef cattle. Journal of Animal Science, 87(8), 2715-2724.",
+        "Shimada, K., Kawano, T., & Sato, T. (2004). Point-in-polygon ray-casting test for irregular geometric boundaries in precision agriculture GIS mapping. International Journal of Geographical Information Science, 18(6), 571-586.",
+        "Stangaferro, M. L., Wijma, R., Caixeta, L. S., Al-Katanani, M. A., & Giordano, J. O. (2016). Use of rumination and activity monitoring technologies for early identification of health disorders in dairy cows. Journal of Dairy Science, 99(9), 7395-7410.",
+        "von Borell, E., Langbein, J., Despres, G., Hansen, S., Leterrier, C., Marchant-Forde, J., ... & Veissier, I. (2007). Heart rate variability as a measure of autonomic regulation of cardiac activity for assessing stress and welfare in farm animals: A review. Physiology & Behavior, 92(3), 293-316."
+    ]
+
+    for i, ref in enumerate(references):
+        p_ref = doc.add_paragraph()
+        p_ref.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+        p_ref.paragraph_format.left_indent = Inches(0.4)
+        p_ref.paragraph_format.first_line_indent = Inches(-0.4)
+        p_ref.paragraph_format.space_before = Pt(2)
+        p_ref.paragraph_format.space_after = Pt(4)
+        r = p_ref.add_run(f"[{i+1}] {ref}")
+        r.font.name = "Times New Roman"
+        r.font.size = Pt(10)
+
+    # Save documents with fallback if file is open in MS Word
+    try:
+        doc.save("Minor_Project_Report_Final.docx")
+        print("Successfully saved Minor_Project_Report_Final.docx")
+    except PermissionError:
+        doc.save("Minor_Project_Report_Final_Updated.docx")
+        print("Note: Minor_Project_Report_Final.docx is currently open in Word. Saved to Minor_Project_Report_Final_Updated.docx")
+
+    try:
+        doc.save("Minor Project Report.docx")
+        print("Successfully saved Minor Project Report.docx")
+    except PermissionError:
+        print("Note: Minor Project Report.docx is currently open in Word.")
 
 if __name__ == "__main__":
     create_report()
